@@ -11,4 +11,9 @@ Its working for small schemas. on practice databases are exploited and the thing
 
 Thanks to bytebuddy and schema-crawler the thing works. 
 
+
+Recommended articles: 
+
+[Great view on what is an object oriented programming] (https://www.youtube.com/watch?v=JDG2m5hN1vo&list=RDJDG2m5hN1vo&start_radio=1)
+
 - version 0.0.1-snapshot.
