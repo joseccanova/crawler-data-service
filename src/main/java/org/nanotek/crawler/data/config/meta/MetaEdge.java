@@ -1,6 +1,11 @@
 package org.nanotek.crawler.data.config.meta;
 
+import java.util.Optional;
+
+import org.jgrapht.graph.DefaultEdge;
+
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,10 +20,12 @@ import lombok.NoArgsConstructor;
  * @author T807630
  *
  */
+@SuppressWarnings("serial")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MetaEdge {
+@Builder
+public class MetaEdge extends DefaultEdge{
 
 	protected MetaClassVertex left; 
 	
@@ -26,6 +33,31 @@ public class MetaEdge {
 	
 	protected RelationType type; 
 	
+	
+	@Override
+	protected Object getSource() {
+		return left(super.getSource());
+	}
+
+
+	private Object left(Object object) {
+		return left = MetaClassVertex.class.cast(object);
+	}
+	
+	@Override
+	protected Object getTarget() {
+		return right(super.getTarget());
+	}
+
+
+	private Object right(Object object) {
+		return right = MetaClassVertex.class.cast(object);
+	}
+	
+	public RelationType getType()
+	{ 
+		return Optional.ofNullable(type).orElse(RelationType.ONE);
+	}
 	
 }
 

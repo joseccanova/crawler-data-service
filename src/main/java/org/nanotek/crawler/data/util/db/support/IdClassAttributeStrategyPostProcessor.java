@@ -6,16 +6,16 @@ import java.util.List;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.util.db.JdbcHelper;
 
-public class IdClassAttributeStrategyPostProcessor extends MetaClassPostProcessor<MetaClass> {
+public class IdClassAttributeStrategyPostProcessor implements MetaClassPostPorcessor<MetaClass> {
 
 	@Override
-	public void process(MetaClass metaClass) {
-		String className = JdbcHelper.prepareName(metaClass.getClassName());
-			metaClass
+	public void verifyMetaClass(MetaClass instance) {
+		String className = JdbcHelper.prepareName(instance.getClassName());
+		instance
 			.getMetaAttributes()
 			.stream()
 			.forEach (att -> {
-				 if(att.getColumnName().equals("id")) { 
+				 if(att.getColumnName().equalsIgnoreCase("id")) { 
 					 List<String> aliases = new ArrayList<>();
 					 String classIdAlias = prepareClassName(className) + "Id";
 					 aliases.add(classIdAlias);
@@ -34,5 +34,6 @@ public class IdClassAttributeStrategyPostProcessor extends MetaClassPostProcesso
 		String firstLetter = className.substring(0, 1).toLowerCase();
 		return firstLetter.concat(className.substring(1));
 	}
+
 
 }

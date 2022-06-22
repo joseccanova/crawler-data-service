@@ -25,3 +25,5 @@ WTF
 ####Facing the fear that the truth, I discover
 ####No telling how, all these will work out
 ####But I've come to far to go back now
+
+Egg First.. https://www.youtube.com/watch?v=r2GEb4MrkvU&list=RDGMEMHDXYb1_DDSgDsobPsOFxpA&index=14
