@@ -9,7 +9,7 @@ import java.util.Optional;
 import javax.persistence.Entity;
 
 import org.nanotek.crawler.data.MetaDataController;
-import org.nanotek.crawler.data.config.meta.MetaClass;
+import org.nanotek.crawler.data.config.meta.IClass;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,7 +29,7 @@ public class ControllerClassConfig {
 		super();
 	}
 
-	public Class<?> createControllerClass(MetaClass mc ,   Class<?> repClass, Class<?>clazz , Class<?>idClass , InjectionClassLoader classLoader){
+	public Class<?> createControllerClass(IClass mc ,   Class<?> repClass, Class<?>clazz , Class<?>idClass , InjectionClassLoader classLoader){
 		Generic typeDescription = TypeDescription.Generic.Builder.parameterizedType(MetaDataController.class ,  clazz , idClass ,  repClass ).build().asGenericType();
 		Entity theEntity = clazz.getAnnotation(Entity.class);
 		Optional.ofNullable(theEntity).orElseThrow();

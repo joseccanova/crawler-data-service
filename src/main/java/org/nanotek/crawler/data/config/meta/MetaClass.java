@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
 @JsonInclude(value = Include.NON_NULL)
-public class MetaClass {
+public class MetaClass implements IClass {
 
 	@JsonProperty("tableName")
 	protected String tableName;
@@ -39,38 +39,47 @@ public class MetaClass {
 		this.metaAttributes = metaAttributes;
 	}
 
+	@Override
 	public String getClassName() {
 		return className;
 	}
 
+	@Override
 	public void setClassName(String className) {
 		this.className = className;
 	}
 
+	@Override
 	public String getTableName() {
 		return tableName;
 	}
 
+	@Override
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
 
+	@Override
 	public List<MetaDataAttribute> getMetaAttributes() {
 		return metaAttributes;
 	}
 
+	@Override
 	public boolean  addMetaAttribute(MetaDataAttribute attr) {
 		return metaAttributes.add(attr);
 	}
 
+	@Override
 	public void hasPrimaryKey(boolean b) {
 		this.hasPrimeraryKey = b;
 	}
 
+	@Override
 	public boolean isHasPrimeraryKey() {
 		return  metaAttributes !=null && metaAttributes.stream().filter(a -> a.isId()).count() > 0;
 	}
 
+	@Override
 	public void setHasPrimeraryKey(boolean hasPrimeraryKey) {
 		this.hasPrimeraryKey = hasPrimeraryKey;
 	}

@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MetaClassVertex {
 
-	MetaClass metaClass; 
+	IClass metaClass; 
 	
-	MetaDataAttribute metaAttribute;
+	IDataAttribute metaAttribute;
 	
 }

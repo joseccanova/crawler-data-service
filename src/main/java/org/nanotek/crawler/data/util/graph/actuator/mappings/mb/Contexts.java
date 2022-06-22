@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Contexts{
  @JsonProperty("mb-data-service") 
- public MbDataService aciDataService;
+ public MbDataService mbDataService;
 }

@@ -67,6 +67,12 @@ import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
 public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 
 	
+	@Bean("classCache")
+	@Qualifier(value="classCache")
+	public Map<Class<?>,String> classCache(){
+		return new HashMap<>();
+	}
+	
 	@Bean
 	@Primary
 	InjectionClassLoader injectionClassLoader() {

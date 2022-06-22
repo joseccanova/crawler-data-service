@@ -3,13 +3,14 @@ package org.nanotek.crawler.data.util.db.support;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.nanotek.crawler.data.config.meta.IClass;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.util.db.JdbcHelper;
 
-public class IdClassAttributeStrategyPostProcessor implements MetaClassPostPorcessor<MetaClass> {
+public class IdClassAttributeStrategyPostProcessor implements MetaClassPostPorcessor<IClass> {
 
 	@Override
-	public void verifyMetaClass(MetaClass instance) {
+	public void verifyMetaClass(IClass instance) {
 		String className = JdbcHelper.prepareName(instance.getClassName());
 		instance
 			.getMetaAttributes()

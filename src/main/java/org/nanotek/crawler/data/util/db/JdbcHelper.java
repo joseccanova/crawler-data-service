@@ -29,6 +29,8 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import org.nanotek.crawler.BaseEntity;
+import org.nanotek.crawler.data.config.meta.IClass;
+import org.nanotek.crawler.data.config.meta.IDataAttribute;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
 import org.nanotek.crawler.data.util.buddy.BuddyBase;
@@ -156,7 +158,7 @@ public class JdbcHelper {
 	private void postProcessBaseClass(Class<?> baseClass) {
 	}
 
-	private Class<?> createBaseClass(MetaClass cm, ClassLoader classLoader) {
+	public Class<?> createBaseClass(MetaClass cm, ClassLoader classLoader) {
 		String myClassName = cm.getClassName();
 		Class<?> baseClass =  Optional.of(cm).filter(cm1 -> cm1.getMetaAttributes().stream().anyMatch(cm11 -> cm11.isId()))
 				.map(cm11 ->{
@@ -180,7 +182,7 @@ public class JdbcHelper {
 	}
 
 	private void fixPrimaryKey(List<MetaDataAttribute> metaAttributes) {
-		MetaDataAttribute pk =  metaAttributes.stream().filter(ma -> ma.isId()).findFirst().get();
+		IDataAttribute pk =  metaAttributes.stream().filter(ma -> ma.isId()).findFirst().get();
 		metaAttributes.stream().forEach(ma -> {
 			if (!ma.equals(pk)) {
 				ma.setId(false);
@@ -188,7 +190,7 @@ public class JdbcHelper {
 		});
 	}
 	
-	private void checkClass(MetaDataAttribute m) {
+	private void checkClass(IDataAttribute m) {
 		if (PropertyEditorManager.findEditor(m.getClazz()) == null) {
 			if (BigDecimal.class.equals(m.getClazz())) {
 				m.setClazz(Double.class);
@@ -234,7 +236,7 @@ public class JdbcHelper {
 		}		
 	}
 
-	private Builder processClassMetaData(MetaClass cm11, ClassLoader classLoader) {
+	private Builder processClassMetaData(IClass cm11, ClassLoader classLoader) {
 		processors.stream().forEach(p -> p.process(cm11));
 		String tableName =  cm11.getTableName();
 		String classNameCandidate = cm11.getClassName();
@@ -372,7 +374,7 @@ public class JdbcHelper {
 		return  Optional.of(meta);	
 	}
 	
-	private String processNameTranslationStrategy(String name) {
+	public String processNameTranslationStrategy(String name) {
 		String newName = name.replaceAll("GRP_", "GRUPO_");
 		newName  = newName .replaceAll("PRTAL$", "PORTAL");
 		newName  = newName .replaceAll("PRTAL_", "PORTAL_");

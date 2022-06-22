@@ -11,7 +11,7 @@ import javax.persistence.Id;
 import javax.validation.Valid;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.nanotek.crawler.data.config.meta.MetaClass;
+import org.nanotek.crawler.data.config.meta.IClass;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @Valid
 public abstract class Base<K , ID> implements IBase<ID> , Serializable {
 
-	private MetaClass metaClass;
+	private IClass metaClass;
 	
 	public static <K extends Base<? , ?>> K newType(Supplier<K> baseSupplier)
 	{ 
@@ -51,7 +51,7 @@ public abstract class Base<K , ID> implements IBase<ID> , Serializable {
 		return 		PropertyUtils.getProperty(base, f.getName());
 	}
 	
-	public MetaClass getMetaClass() {
+	public IClass getMetaClass() {
 		return this.metaClass;
 	}
 	

@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MetaEdge extends DefaultEdge{
+public class MetaEdge extends DefaultEdge implements IMetaEdge{
 
 	protected Class<?> left; 
 	
@@ -45,15 +45,27 @@ public class MetaEdge extends DefaultEdge{
 	}
 	
 	@Override
+	public Class<?> getLeft(Object object){
+		return Class.class.cast(object);
+	}
+	
+	@Override
 	public Object getTarget() {
 		return right(super.getTarget());
 	}
 
 
 	private Object right(Object object) {
-		return right = Class.class.cast(object);
+		return right = getRight(object);
 	}
 	
+	@Override
+	public Class<?> getRight(Object object) {
+		return Class.class.cast(object);
+	}
+
+
+	@Override
 	public RelationType getType()
 	{ 
 		return Optional.ofNullable(type).orElse(RelationType.ONE);

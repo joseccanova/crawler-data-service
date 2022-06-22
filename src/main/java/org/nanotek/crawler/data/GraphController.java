@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jgrapht.Graph;
-import org.nanotek.crawler.data.config.meta.GraphRelationsService;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
+import org.nanotek.crawler.service.GraphRelationsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.ToString;
 
 @ToString
-public class MetaDataAttribute {
+public class MetaDataAttribute implements IDataAttribute {
 
 	@JsonProperty("isId")
 	protected boolean isId = false;
@@ -34,18 +34,21 @@ public class MetaDataAttribute {
 		super();
 	}
 
+	@Override
 	public boolean isId() {
 		return isId;
 	}
 
 
 
+	@Override
 	public void setId(boolean isId) {
 		this.isId = isId;
 	}
 
 
 
+	@Override
 	public String getColumnName() {
 		return columnName;
 	}
@@ -53,6 +56,7 @@ public class MetaDataAttribute {
 
 
 
+	@Override
 	public void setColumnName(String columnName) {
 		this.columnName = columnName;
 	}
@@ -60,59 +64,73 @@ public class MetaDataAttribute {
 
 
 
+	@Override
 	public void setClazz(Class<?> clazz) {
 		this.clazz = clazz;
 	}
 
 
+	@Override
 	public Class<?> getClazz(){
 		return this.clazz;
 	}
 
+	@Override
 	public String getSqlType() {
 		return sqlType;
 	}
 
+	@Override
 	public void setSqlType(String string) {
 		this.sqlType = string;
 	}
 
+	@Override
 	public String getLength() {
 		return length;
 	}
 
+	@Override
 	public void setLength(String length) {
 		this.length = length;
 	}
 
+	@Override
 	public boolean isRequired() {
 		return required;
 	}
 
+	@Override
 	public void setRequired(boolean required) {
 		this.required = required;
 	}
 
+	@Override
 	public void setFieldName(String name) {
 		this.fieldName = name;
 	}
 
+	@Override
 	public String getFieldName() {
 		return fieldName;
 	}
 
+	@Override
 	public void setAttributes(Map<String, Object> attributes) {
 		this.attributes = attributes;
 	}
 
+	@Override
 	public Map<String, Object> getAttributes() {
 		return attributes;
 	}
 
+	@Override
 	public List<String> getIdAliases() {
 		return idAliases;
 	}
 
+	@Override
 	public void setIdAliases(List<String> idAliases) {
 		this.idAliases = idAliases;
 	}

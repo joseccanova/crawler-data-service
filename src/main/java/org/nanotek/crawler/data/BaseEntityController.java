@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import org.nanotek.crawler.BaseEntity;
 import org.nanotek.crawler.SearchContainer;
+import org.nanotek.crawler.data.config.meta.IClass;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
 import org.nanotek.crawler.data.util.Holder;
@@ -65,7 +66,7 @@ extends RepositoryBaseController<T , B> // , SimpleRepresentationModelAssembler<
 	}
 
 	@GetMapping(path="/metaclass" ,  produces= {MediaType.APPLICATION_JSON_VALUE})
-	default ResponseEntity<MetaClass> produceMetaClass(){
+	default ResponseEntity<IClass> produceMetaClass(){
 		return ResponseEntity.ok(getMetaClass());
 	}
 	
@@ -217,7 +218,7 @@ extends RepositoryBaseController<T , B> // , SimpleRepresentationModelAssembler<
 	}
 	
 	@JsonIgnore
-	default MetaClass getMetaClass() {
+	default IClass getMetaClass() {
 		return null;
 	}
 	
