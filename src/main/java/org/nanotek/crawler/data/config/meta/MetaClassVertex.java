@@ -1,9 +1,9 @@
 package org.nanotek.crawler.data.config.meta;
 
-public class MetaClassAttribute {
+public class MetaClassVertex {
 
 	MetaClass metaClass; 
 	
-	MetaClassAttribute metaAttribute;
+	MetaClassVertex metaAttribute;
 	
 }

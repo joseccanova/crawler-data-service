@@ -18,11 +18,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MetaRelation {
+public class MetaEdge {
 
-	protected MetaClassRelation left; 
+	protected MetaClassVertex left; 
 	
-	protected MetaClassRelation right;
+	protected MetaClassVertex right;
 	
 	protected RelationType type; 
 	
