@@ -17,3 +17,11 @@ Recommended articles:
 [Great view on what is an object oriented programming] (https://www.youtube.com/watch?v=JDG2m5hN1vo&list=RDJDG2m5hN1vo&start_radio=1)
 [Code code code : (https://www.youtube.com/watch?v=KB9dso-h_Es)]
 - version 0.0.1-snapshot.
+
+WTF
+
+####Felt like the weight of the world was on my shoulders
+####But should I break or retreat and then return
+####Facing the fear that the truth, I discover
+####No telling how, all these will work out
+####But I've come to far to go back now
