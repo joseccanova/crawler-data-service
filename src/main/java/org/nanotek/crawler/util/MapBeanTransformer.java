@@ -13,21 +13,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 
-public class MapBeanTransformer<I> implements Transformer<I,Map<String , Object>> {
+public interface MapBeanTransformer<I> extends Transformer<I,Map<String , Object>> {
 
-	I bean ;
 	 
 	
-	public MapBeanTransformer() {
-		
-	}
-
-	public MapBeanTransformer(String sufix2) {
-	}
-
-	
 	@Override
-	public Map<String , Object> transform(I input) {
+	default Map<String , Object> transform(I input) {
 		ObjectMapper obj = new ObjectMapper();
 		JsonNode node = obj.valueToTree(input);
 		Map<String,Object> out = new HashMap<>();
