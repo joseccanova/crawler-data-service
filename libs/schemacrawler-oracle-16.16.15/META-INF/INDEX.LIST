@@ -1,0 +1,14 @@
+JarIndex-Version: 1.0
+
+schemacrawler-oracle-16.16.15.jar
+META-INF
+META-INF/maven
+META-INF/maven/us.fatehi
+META-INF/maven/us.fatehi/schemacrawler-oracle
+META-INF/services
+oracle.information_schema
+schemacrawler
+schemacrawler/server
+schemacrawler/server/oracle
+schemacrawler-oracle.before.sql
+
