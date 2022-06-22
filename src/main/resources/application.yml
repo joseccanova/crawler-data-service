@@ -14,7 +14,7 @@ spring:
         enable: true
         auto-registration: true
   application:
-    name: aci-data-service
+    name: mb-data-service
   activemq:
    broker-url: tcp://localhost:61616
   datasource:

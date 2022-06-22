@@ -1,43 +1,30 @@
-package org.nanotek.crawler.data.config.meta;
+package org.nanotek.crawler.service;
 
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorManager;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.WrapDynaBean;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
-import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.nanotek.crawler.Base;
-import org.nanotek.crawler.SearchContainer;
-import org.nanotek.crawler.data.util.db.support.IdClassAttributeStrategyPostProcessor;
+import org.nanotek.crawler.data.config.meta.Id;
+import org.nanotek.crawler.data.config.meta.MetaEdge;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostPorcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.integration.core.MessagingTemplate;
-import org.springframework.integration.dsl.IntegrationFlow;
-import org.springframework.integration.dsl.IntegrationFlows;
-import org.springframework.integration.dsl.MessageChannels;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -114,7 +101,7 @@ public class GraphRelationsService<T extends Base<?,?>> {
 			.forEach(f -> {
 				Arrays.asList(v1.getDeclaredFields()).stream()
 				.forEach(f1 -> {
-					if(f1.getName().equals(f.getName())){
+					if(hasFieldEquivalence(f,f1)){
 						if(!theGraph.containsEdge(v , v1)) {
 							if (f.getAnnotation(Id.class)!=null) {
 								theGraph.addEdge(v , v1);
@@ -125,6 +112,26 @@ public class GraphRelationsService<T extends Base<?,?>> {
 			});
 	}
 
+
+	private boolean hasFieldEquivalence(Field f, Field f1) {
+		return Optional.ofNullable(f)
+		.filter(field -> isId(field) && !isId(f1))
+		.filter(field -> fieldMapOver(field , f1)).isPresent();
+	}
+
+	private boolean fieldMapOver(Field field, Field f1) {
+		PropertyEditor pe = PropertyEditorManager.findEditor(f1.getType());
+		PropertyEditor peField = PropertyEditorManager.findEditor(field.getType());
+		return pe !=null && peField !=null && hasFieldNameCriteria(field,f1);
+	}
+
+	private boolean hasFieldNameCriteria(Field field, Field f1) {
+		return f1.getName().toLowerCase().contains(field.getDeclaringClass().getSimpleName().toLowerCase());
+	}
+
+	private boolean isId(Field f) {
+		return  f.getAnnotationsByType(Id.class)!=null;
+	}
 
 	private boolean containsField(Class<?> v, Class<?> v1) {
 		if (v.equals(v1))

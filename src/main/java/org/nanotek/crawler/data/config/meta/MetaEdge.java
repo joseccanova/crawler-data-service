@@ -27,31 +27,31 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MetaEdge extends DefaultEdge{
 
-	protected MetaClassVertex left; 
+	protected Class<?> left; 
 	
-	protected MetaClassVertex right;
+	protected Class<?> right;
 	
 	protected RelationType type; 
 	
 	
 	@Override
-	protected Object getSource() {
+	public Object getSource() {
 		return left(super.getSource());
 	}
 
 
 	private Object left(Object object) {
-		return left = MetaClassVertex.class.cast(object);
+		return left = Class.class.cast(object);
 	}
 	
 	@Override
-	protected Object getTarget() {
+	public Object getTarget() {
 		return right(super.getTarget());
 	}
 
 
 	private Object right(Object object) {
-		return right = MetaClassVertex.class.cast(object);
+		return right = Class.class.cast(object);
 	}
 	
 	public RelationType getType()

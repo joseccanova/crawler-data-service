@@ -32,18 +32,8 @@ import org.nanotek.crawler.BaseEntity;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
 import org.nanotek.crawler.data.util.buddy.BuddyBase;
-import org.nanotek.crawler.data.util.db.support.AgenciaPostProcessor;
 import org.nanotek.crawler.data.util.db.support.IdClassAttributeStrategyPostProcessor;
-import org.nanotek.crawler.data.util.db.support.MensagemPerfilPostProcessor;
-import org.nanotek.crawler.data.util.db.support.MensagemPostProcessor;
-import org.nanotek.crawler.data.util.db.support.MessageCreatorPostProcessor;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
-import org.nanotek.crawler.data.util.db.support.MunicipioPostProcessor;
-import org.nanotek.crawler.data.util.db.support.OficinaPostProcessor2;
-import org.nanotek.crawler.data.util.db.support.OpcaoMenuPostProcessor;
-import org.nanotek.crawler.data.util.db.support.PaisPostProcessor;
-import org.nanotek.crawler.data.util.db.support.ParamPortaPostProcessor;
-import org.nanotek.crawler.data.util.db.support.TituloPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -91,7 +81,6 @@ public class JdbcHelper {
 
 	void postConstruct() {
 		processors = new ArrayList<>();
-		processors.add(new IdClassAttributeStrategyPostProcessor());
 	}
 
 	
