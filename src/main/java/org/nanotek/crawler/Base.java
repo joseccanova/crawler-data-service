@@ -32,7 +32,6 @@ public abstract class Base<K , ID> implements IBase<ID> , Serializable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@JsonIgnore
 	public ID getId()  {
 		return (ID)Arrays.asList(this.getClass().getDeclaredFields())
 		.stream()

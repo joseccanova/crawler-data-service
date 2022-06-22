@@ -1,5 +1,6 @@
 package org.nanotek.crawler.data.config.meta;
 
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,6 +26,8 @@ public class MetaDataAttribute {
 	private String fieldName;
 	@JsonProperty("attributes")
 	private Map<String, Object> attributes;
+	
+	private List<String> idAliases;
 	
 	
 	public MetaDataAttribute() {
@@ -104,6 +107,14 @@ public class MetaDataAttribute {
 
 	public Map<String, Object> getAttributes() {
 		return attributes;
+	}
+
+	public List<String> getIdAliases() {
+		return idAliases;
+	}
+
+	public void setIdAliases(List<String> idAliases) {
+		this.idAliases = idAliases;
 	}
 	
 	

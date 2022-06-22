@@ -15,5 +15,5 @@ Thanks to bytebuddy and schema-crawler the thing works.
 Recommended articles: 
 
 [Great view on what is an object oriented programming] (https://www.youtube.com/watch?v=JDG2m5hN1vo&list=RDJDG2m5hN1vo&start_radio=1)
-
+[Code code code : (https://www.youtube.com/watch?v=KB9dso-h_Es)]
 - version 0.0.1-snapshot.
