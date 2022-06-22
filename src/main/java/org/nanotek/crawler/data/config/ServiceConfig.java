@@ -15,6 +15,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+@Deprecated
 public class ServiceConfig implements WebMvcConfigurer {
 
 	public ServiceConfig() {

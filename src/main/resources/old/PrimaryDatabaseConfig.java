@@ -1,4 +1,4 @@
-package br.com.tokiomarine.portal.data.config;
+package org.nanotek.data.portal.data.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +32,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import br.com.tokiomarine.util.MapBeanTransformer;
+import org.nanotek.data.util.MapBeanTransformer;
 
 @SpringBootConfiguration
 @EnableTransactionManagement
-@ComponentScan({"br.com.tokiomarine"}  )
+@ComponentScan({"org.nanotek.data"}  )
 @ConfigurationProperties
 @EnableJpaRepositories(
 		basePackages = 
-	{"br.com.tokiomarine.repositories"}
+	{"org.nanotek.data.repositories"}
 					, transactionManagerRef = "defaultTransactionManager")
 @EnableAutoConfiguration(exclude = 
 						{ 
@@ -78,7 +78,7 @@ public class PrimaryDatabaseConfig {
 		vendorAdapter.setGenerateDdl(false);
 		LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
 		factory.setJpaVendorAdapter(vendorAdapter);
-		factory.setPackagesToScan(new String []{"br.com.tokiomarine.domain"});
+		factory.setPackagesToScan(new String []{"org.nanotek.data.domain"});
 		factory.setPersistenceUnitName("oracleDefault");
 		factory.setJpaPropertyMap(customjpaproperties());
 		factory.setDataSource(dataSource);

@@ -18,17 +18,15 @@ spring:
   activemq:
    broker-url: tcp://localhost:61616
   datasource:
-    jdbcUrl: jdbc:oracle:thin:@srvdpxodb03a.tokiomarine.com.br:1527:acim
-    url: jdbc:oracle:thin:@srvdpxodb03a.tokiomarine.com.br:1527:acim
-    #username: ADMACI
-    username: ADMACI 
-    password: Tokio123
-    driverClassName: oracle.jdbc.OracleDriver   
+    jdbcUrl: jdbc:postgresql://127.0.0.1:5432/musicbrainz
+    url: jdbc:postgresql://127.0.0.1:5432/musicbrainz
+    username: postgres 
+    password: postgres123   
   hikari:
     connectionTimeout: 30000
     maximumPoolSize: 250
   jpa:
-    database-platform: org.hibernate.dialect.Oracle10gDialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
     hibernate.globally_quoted_identifiers: true
     hibernate.current_session_context_class: thread

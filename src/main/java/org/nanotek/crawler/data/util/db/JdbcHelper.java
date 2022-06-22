@@ -123,7 +123,9 @@ public class JdbcHelper {
 					return name;
 				}).orElse(str);
 	}
-
+	
+	//TODO: Find the last version that fix this method. 
+	//its somewhere on computer... find it.
 	// Function to convert the string
 	// from snake case to camel case
 	public static String snakeToCamel(String str)
