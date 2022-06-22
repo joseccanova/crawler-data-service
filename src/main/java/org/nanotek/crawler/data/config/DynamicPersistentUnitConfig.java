@@ -62,7 +62,7 @@ import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
 @SpringBootConfiguration
 @EnableJpaRepositories(
 		basePackages = 
-	{"br.com.tokiomarine.entity.mb.buddy.repositories"}
+	{"org.nanotek.data.entity.mb.buddy.repositories"}
 		, transactionManagerRef = "transactionManager")
 public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 
@@ -269,7 +269,7 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 		.forEach((x , repClass) ->{
 			try {
 				String sName = repClass.getSimpleName().replace("Repository", "");
-				String sNmae2 = sName; // "br.com.tokiomarine.entity.mb."+
+				String sNmae2 = sName; // "org.nanotek.data.entity.mb."+
 				Optional.ofNullable(classConfig.getOrDefault(sNmae2 , null))
 				.ifPresentOrElse(c ->{
 					//					    MyJpaRepositoryComponentBean fv = new MyJpaRepositoryComponentBean(repClass);
@@ -353,7 +353,7 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 		MergingPersistenceUnitManager pum = new  MyMergingPersistenceUnitManager();
 		pum.setValidationMode(ValidationMode.NONE);
 		pum.setDefaultPersistenceUnitName("buddyPU");
-		pum.setPackagesToScan("br.com.tokiomarine.entity.mb");
+		pum.setPackagesToScan("org.nanotek.data.entity.mb");
 		pum.setDefaultDataSource(dataSource);
 		pum.setPersistenceUnitPostProcessors(myProcessor());
 		pum.preparePersistenceUnitInfos();
@@ -402,7 +402,7 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 				//				defaultListableBeanFactory.registerBeanDefinition(clazz.getSimpleName(), bd);
 				//			  }
 			});
-			pui.addManagedPackage("br.com.tokiomarine.entity.mb");
+			pui.addManagedPackage("org.nanotek.data.entity.mb");
 			pui.setValidationMode(ValidationMode.NONE);
 			pui.setExcludeUnlistedClasses(false);
 			Properties p = new Properties(); 

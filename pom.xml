@@ -173,8 +173,11 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>		
-		<!-- https://mvnrepository.com/artifact/de.codecentric/spring-boot-admin-server 
-		-->
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.10.2</version>
+		</dependency>
 		<dependency>
     		<groupId>de.codecentric</groupId>
 		    <artifactId>spring-boot-admin-starter-server</artifactId>

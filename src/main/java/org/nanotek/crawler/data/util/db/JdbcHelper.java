@@ -71,7 +71,7 @@ import schemacrawler.tools.utility.SchemaCrawlerUtility;
 @Slf4j
 public class JdbcHelper {
 	
-	public static final String PACKAGE =  "br.com.tokiomarine.entity.mb.";  ;
+	public static final String PACKAGE =  "org.nanotek.entity.mb.";  ;
 
 
 	@Autowired
@@ -323,7 +323,7 @@ public class JdbcHelper {
 		
 		final LimitOptionsBuilder limitOptionsBuilder =
 				LimitOptionsBuilder.builder()
-				.includeSchemas(new RegularExpressionInclusionRule("ADMACI"));
+				.includeSchemas(new RegularExpressionInclusionRule("."));
 //				.includeRoutineParameters(new RegularExpressionExclusionRule("."))
 //				.includeSequences(new RegularExpressionExclusionRule("."))
 //				.includeRoutines(new RegularExpressionExclusionRule("."));
@@ -338,7 +338,7 @@ public class JdbcHelper {
 
 		final SchemaCrawlerOptions options =
 				SchemaCrawlerOptionsBuilder.newSchemaCrawlerOptions()
-						    		            .withLimitOptions(limitOptionsBuilder.toOptions())
+//						    		            .withLimitOptions(limitOptionsBuilder.toOptions())
 				.withLoadOptions(loadOptionsBuilder.toOptions());
 
 		Connection connection = dataSource.getConnection();

@@ -119,7 +119,7 @@ public class RepositoryClassesConfig extends Cache<String, Class<?>> {
 		Class<?> cd =   new ByteBuddy(ClassFileVersion.JAVA_V8)
 //				.makeInterface(EntityBaseRepository.class)
 				.makeInterface(typeDescription)
-				.name( "br.com.tokiomarine.entity.mb.buddy.repositories." + theEntity.name() +"Repository")
+				.name( "org.nanotek.data.entity.mb.buddy.repositories." + theEntity.name() +"Repository")
 				.annotateType( AnnotationDescription.Builder.ofType(Repository.class)
 						.build())
 				.annotateType( AnnotationDescription.Builder.ofType(Qualifier.class)

@@ -35,7 +35,7 @@ public class ControllerClassConfig {
 		Optional.ofNullable(theEntity).orElseThrow();
 		Class<?> cd =   new ByteBuddy(ClassFileVersion.JAVA_V8)
 				.subclass(typeDescription)
-				.name( "br.com.tokiomarine.portal.data." + theEntity.name() +"Controller")
+				.name( "org.nanotek.data.data." + theEntity.name() +"Controller")
 				.annotateType( AnnotationDescription.Builder.ofType(RestController.class)
 						.build())
 				.annotateType( AnnotationDescription.Builder.ofType(RequestMapping.class)
