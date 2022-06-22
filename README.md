@@ -7,4 +7,8 @@ this version probably will work. still have some hard code ahead but then we are
 
 Many thanks for those who trust and support me.
 
+Its working for small schemas. on practice databases are exploited and the things will became slow.. we can fix altering schema-crawler to avoid some excessive scan.
+
+Thanks to bytebuddy and schema-crawler the thing works. 
+
 - version 0.0.1-snapshot.
