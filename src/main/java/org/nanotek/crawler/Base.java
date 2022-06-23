@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -31,6 +32,7 @@ public abstract class Base<K , ID> implements IBase<ID> {
 		return 		PropertyUtils.getProperty(base, f.getName());
 	}
 	
+	@JsonIgnore
 	public abstract MetaClass getMetaClass();
 	
 }

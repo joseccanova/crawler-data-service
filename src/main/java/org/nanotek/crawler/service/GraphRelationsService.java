@@ -43,6 +43,8 @@ public class GraphRelationsService<T extends Base<?,?>> {
 	
 	List<MetaClassPostPorcessor<T>> instancePostProcessors = new ArrayList<>();
 
+	private Graph<Class<?>, MetaEdge> entityGraph;
+
 	
 	public Map<?,?> getEntityClassConfig(){
 		return entityClassConfig.keySet()
@@ -55,8 +57,9 @@ public class GraphRelationsService<T extends Base<?,?>> {
 
 	public Graph<Class<?> , MetaEdge>   mountRelationGraph() {
 		Graph<Class<?> , MetaEdge> theGraph = prepareGraph() ;
+		if(entityGraph == null)
 		 processClassCache(theGraph);	
-		 return theGraph;
+		 return (this.entityGraph = theGraph);
 	}
 
 
@@ -91,8 +94,6 @@ public class GraphRelationsService<T extends Base<?,?>> {
 			log.info("vertex added {}" , v );
 			theGraph.addVertex(v);
 		}
-		if (v.getAnnotation(javax.persistence.Id.class) ==null)
-			return false;
 		entityClassConfig
 		.keySet()
 		.parallelStream()
@@ -116,16 +117,16 @@ public class GraphRelationsService<T extends Base<?,?>> {
 		AtomicInteger idx = new AtomicInteger();
 		if (!v.equals(v1))
 			Arrays.asList(v.getDeclaredFields()).parallelStream()
+			.filter(f -> f.getAnnotation(javax.persistence.Id.class) !=null)
 			.forEach(f -> {
 				Arrays.asList(v1.getDeclaredFields()).parallelStream()
 				.forEach(f1 -> {
 					if(hasFieldEquivalence(f,f1)){
-						synchronized(idx) {
-							idx.addAndGet(1);
-							if(!theGraph.containsEdge(v1 , v)) {
-								theGraph.addEdge(v1, v);
-									log.info("edge created {} {}",v , v1);
-							}
+						AtomicInteger ai = new AtomicInteger();
+						synchronized(ai) {
+							ai.getAndAdd(1);
+							Object edge = theGraph.addEdge(v, v1 , new MetaEdge(v , v1));
+							log.info("the edge {}:" , edge);
 						}
 					}
 				});
@@ -146,9 +147,16 @@ public class GraphRelationsService<T extends Base<?,?>> {
 	}
 
 	private boolean hasFieldName(Field field, Field f1) {
-		String fieldName = field.getName() + "Id";
-		fieldName = fieldName.substring(0, 1).toLowerCase().concat(fieldName.substring(1));
-		return fieldName.equals(f1.getName());
+		String fieldName = field.getDeclaringClass().getSimpleName() + "id";
+		return fieldName.toLowerCase().equals(f1.getName().toLowerCase());
+	}
+
+	public Graph<Class<?>, MetaEdge> getEntityGraph() {
+		return entityGraph;
+	}
+
+	public void setEntityGraph(Graph<Class<?>, MetaEdge> entityGraph) {
+		this.entityGraph = entityGraph;
 	}
 
 

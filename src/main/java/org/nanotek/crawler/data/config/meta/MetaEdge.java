@@ -1,5 +1,6 @@
 package org.nanotek.crawler.data.config.meta;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultEdge;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * What is about, left and right is a common vocabulary on graphs representation. 
@@ -21,25 +23,32 @@ import lombok.Data;
  *
  */
 @SuppressWarnings("serial")
-@Data
 @Builder
+@Slf4j
 public class MetaEdge extends DefaultEdge  {
 
 
 	public MetaEdge() {}
 	
 	public MetaEdge(Class<?> source , Class<?> target) {
-		Arrays.asList(DefaultEdge.class.getDeclaredFields())
-		.forEach(f ->{
-			f.setAccessible(true);
+		Arrays.asList(MetaEdge.class.getClasses())
+		.stream()
+		.forEach(c -> {
 			try {
-				if (f.getName().equals("source"))
-				f.set(this, source);
-				else if (f.getName().equals("target"))
-					f.set(this, target);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+				log.info("class {}", c);
+					if (c.getField("source") !=null){
+						Field f = c.getField("source");
+						f.setAccessible(true);
+						f.set(this, source);
+					}
+					if (c.getField("target") !=null){
+						Field f = c.getField("target");
+						f.setAccessible(true);
+						f.set(this, target);
+						
+					}
+				} catch (Exception e) {
+				}
 		});
 	}
 	
@@ -52,6 +61,20 @@ public class MetaEdge extends DefaultEdge  {
 	@JsonProperty(value ="source")
 	public Object getSource() {
 		return super.getSource();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+			if (obj == null)
+				return false;
+			MetaEdge eob = MetaEdge.class.cast(obj);
+			if (eob.getSource()==null && this.getSource() !=null)
+				return false;
+			if(eob.getTarget()==null && this.getTarget()!=null)
+				return false;
+			return eob.getSource().equals(this.getSource())
+			&& 
+			eob.getTarget().equals(this.getTarget());
 	}
 
 }
