@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.Type;
 import org.nanotek.crawler.Base;
 import org.nanotek.crawler.BaseEntity;
 import org.nanotek.crawler.data.config.meta.IClass;
@@ -275,7 +277,7 @@ public class JdbcHelper {
 				if (m !=null && m.isId()) {
 					bd1 = processIdProperty(bd1 , m , fieldNAme , ca , columnAnnotation ,  m.getMetaClass());
 				}else {
-					bd1=bd1.defineProperty(fieldNAme.trim(), ca).annotateField(processColumnAnnotation(columnAnnotation));
+					bd1=bd1.defineProperty(fieldNAme.trim(), ca).annotateField(checkAditionalAnnotatoins(ca , columnAnnotation));
 				}
 				h.put(bd1);
 			}catch (Exception e) {
@@ -287,6 +289,17 @@ public class JdbcHelper {
 			throw new RuntimeException(e1);
 		}
 		log.info("the holder value ");
+	}
+
+	private AnnotationDescription[] checkAditionalAnnotatoins(Class<?> ca, AnnotationDescription columnAnnotation) {
+		AnnotationDescription[] descs ; 
+		if (UUID.class.equals(ca)) {
+			AnnotationDescription typed = AnnotationDescription.Builder.ofType(Type.class).define("type", "org.hibernate.type.PostgresUUIDType").build();
+			descs = new 	AnnotationDescription[] {columnAnnotation,typed};
+		}else {
+			descs = new 	AnnotationDescription[] {columnAnnotation};
+		}
+		return descs;
 	}
 
 	@Autowired
@@ -305,11 +318,8 @@ public class JdbcHelper {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		log.info("property ID :{}" , fieldname.trim());
 		return bd1.defineProperty(fieldname.trim(), ca).annotateField(columnAnnotation).annotateField(processIdAnnotations());
-	}
-
-	private AnnotationDescription processColumnAnnotation(AnnotationDescription columnAnnotation) {
-		return columnAnnotation;
 	}
 
 	private AnnotationDescription[] processIdAnnotations() {

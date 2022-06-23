@@ -8,7 +8,7 @@ import org.jgrapht.graph.DefaultEdge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @SuppressWarnings("serial")
 @Builder
 @Slf4j
+@ToString
 public class MetaEdge extends DefaultEdge  {
 
 

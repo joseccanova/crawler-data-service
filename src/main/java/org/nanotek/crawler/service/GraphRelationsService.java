@@ -3,27 +3,53 @@ package org.nanotek.crawler.service;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import org.apache.commons.beanutils.ConvertUtils;
+import org.apache.commons.beanutils.PropertyUtilsBean;
+import org.apache.commons.beanutils.WrapDynaBean;
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.nanotek.crawler.Base;
-import org.nanotek.crawler.data.config.meta.Id;
+import org.nanotek.crawler.data.SearchParameters;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
-import org.nanotek.crawler.data.util.db.JdbcHelper;
+import org.nanotek.crawler.data.config.meta.TempClass;
+import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
+import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostPorcessor;
 import org.nanotek.crawler.data.util.graph.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.integration.core.MessagingTemplate;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.dsl.MessageChannels;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SpringBootConfiguration
 @EnableScheduling
-public class GraphRelationsService<T extends Base<?,?>> {
+public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRepository<T, ?>> {
 
 	@Autowired
 	PersistenceUnityClassesConfig entityClassConfig;
@@ -42,9 +68,12 @@ public class GraphRelationsService<T extends Base<?,?>> {
 	RestClient restClient;
 	
 	List<MetaClassPostPorcessor<T>> instancePostProcessors = new ArrayList<>();
+	
 
 	private Graph<Class<?>, MetaEdge> entityGraph;
 
+	@Autowired
+	DefaultListableBeanFactory beanFactory;
 	
 	public Map<?,?> getEntityClassConfig(){
 		return entityClassConfig.keySet()
@@ -58,8 +87,11 @@ public class GraphRelationsService<T extends Base<?,?>> {
 	public Graph<Class<?> , MetaEdge>   mountRelationGraph() {
 		Graph<Class<?> , MetaEdge> theGraph = prepareGraph() ;
 		if(entityGraph == null)
+		{
 		 processClassCache(theGraph);	
-		 return (this.entityGraph = theGraph);
+		 this.entityGraph = theGraph;
+		}
+		 return (this.entityGraph );
 	}
 
 
@@ -69,7 +101,24 @@ public class GraphRelationsService<T extends Base<?,?>> {
 				.allowingSelfLoops(true).edgeSupplier(MetaEdge::new).weighted(false).buildGraph();
 	}
 
+	@Autowired
+	ObjectMapper mapper;
+	
+	public GraphPath<Class<?> , MetaEdge> getGraphPath(JsonNode jsonNode) {
+		try {
+		TempClass map= mapper.convertValue(jsonNode, TempClass.class);
+		Class<?> sourcls = beanFactory.getBeanClassLoader().loadClass(map.getSource());
+		Class<?> targetcls = beanFactory.getBeanClassLoader().loadClass(map.getTarget());
+		Graph<Class<?> , MetaEdge> relationGraph = mountRelationGraph();
+		BidirectionalDijkstraShortestPath<Class<?>, MetaEdge> djkstra = new BidirectionalDijkstraShortestPath<>(relationGraph);
+		return djkstra.getPath(sourcls, targetcls);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
 
+	
 	private void processClassCache(Graph<Class<?> , MetaEdge>  theGraph) {
 		processVertexRelations(theGraph );
 	}
@@ -148,7 +197,8 @@ public class GraphRelationsService<T extends Base<?,?>> {
 
 	private boolean hasFieldName(Field field, Field f1) {
 		String fieldName = field.getDeclaringClass().getSimpleName() + "id";
-		return fieldName.toLowerCase().equals(f1.getName().toLowerCase());
+		String fieldName1 = f1.getDeclaringClass().getSimpleName()+"id";
+		return fieldName.toLowerCase().equals(f1.getName().toLowerCase()) || fieldName1.toLowerCase().contains(field.getDeclaringClass().getSimpleName()); 
 	}
 
 	public Graph<Class<?>, MetaEdge> getEntityGraph() {
@@ -160,6 +210,355 @@ public class GraphRelationsService<T extends Base<?,?>> {
 	}
 
 
+	@Bean(value="inputChannel")
+	MessageChannel inputChannel(){
+		return MessageChannels.direct("inputChannel").get();
+	}
+	
+	@Bean(value="inputChannelTemplate")
+	@Qualifier(value="inputChannelTemplate")
+	MessagingTemplate inputTemplate() {
+		return new MessagingTemplate(inputChannel());
+	}
 
+	@Bean(value="outputChannel")
+	MessageChannel outputChannel(){
+		return MessageChannels.direct("outputChannel").get();
+	}
+	
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private Object prepareGraphPayload(Object m) {
+		SearchParameters parameters = SearchParameters.class.cast(m);
+		Map<String,Object> payload = new HashMap<>();
+		List<Class<?>> visited = new ArrayList<>();
+		payload.put("visited", visited);
+		String inputClass1 = parameters.getInputClass1();
+		payload.put("inputClass1", inputClass1);
+		Optional<Class<T>> clazz1 = createClass(inputClass1);
+		String inputClass2 = parameters.getInputClass2();
+		payload.put("inputClass2", inputClass2);
+		Optional<Class<T>> clazz2 = createClass(inputClass2);
+		payload.put("graph", mountRelationGraph());
+		payload.put("parameters", parameters.getParameters());
+		DijkstraShortestPath<Class<?> , MetaEdge> bf = new DijkstraShortestPath<>(checkGraph(mountRelationGraph() , payload , clazz1 , clazz2));
+		GraphPath<Class<?> , MetaEdge> g1 = bf.getPath(clazz1.get(),clazz2.get());
+		payload.put("path" , g1);
+		return payload;	
+	}
+	
+
+	private Graph<Class<?>, MetaEdge>  checkGraph(Graph<Class<?>, MetaEdge> entityGraph, Map payload, Optional<Class<T>> clazz1,
+			Optional<Class<T>> clazz2) {
+		if (payload.get("simple") !=null) {
+			Graph<Class<?> , MetaEdge> theGraph = GraphTypeBuilder.<Class<?>, MetaEdge> undirected().allowingMultipleEdges(false)
+					.allowingSelfLoops(true).edgeClass(MetaEdge.class).weighted(false).buildGraph();
+			theGraph.addVertex(clazz1.get());
+			if(!theGraph.containsVertex(clazz2.get())){
+				theGraph.addVertex(clazz2.get());
+				theGraph.addEdge(clazz1.get(), clazz2.get());
+			}else {
+				theGraph.addEdge(clazz1.get(), clazz1.get());
+			}
+			return theGraph;
+		}
+		return entityGraph;
+	}
+	@SuppressWarnings({ "unchecked", "unused" })
+	private Optional<Class<T>> createClass(String classStr){
+		try {
+			return  Optional.ofNullable( (Class<T>) beanFactory.getBeanClassLoader().loadClass(classStr));
+		} catch (Exception e) {
+			return Optional.empty();
+		}
+	}
+	
+	@Bean
+	IntegrationFlow createInputGraphIntegrationFlow(){
+		return IntegrationFlows.from(inputChannel())
+				.transform(m -> {
+					return prepareGraphPayload(m);
+				})
+				.channel(outputChannel())
+				.get();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Bean
+	IntegrationFlow createOutputIntegrationFlow(){
+		return IntegrationFlows.from(outputChannel())
+				.transform(m -> {
+					Map payload = Map.class.cast(m);
+					return processOutputChannelPayload(m);
+				})
+				.route(m -> checkEndpath(m))
+				.get();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Bean
+	IntegrationFlow nillChannelFlow(){
+		return IntegrationFlows.from(nillChannel())
+				.transform(m -> m)
+				.get();
+	}
+	
+	private Object processOutputChannelPayload(Object m) {
+		Map payload = Map.class.cast(m);
+		String inputClass1 = String.class.cast(payload.get("inputClass1"));
+		GraphPath<Class<?> , MetaEdge> g1 = GraphPath.class.cast(payload.get("path"));
+		Class<?> clazz1 = createClass(inputClass1).get();
+		String inputClass2 = String.class.cast(payload.get("inputClass2"));
+		Class<?> clazz2 = createClass(inputClass2).get();
+		Object msg1 =  processaClassePayload(m, inputClass1);
+		getNextPath(m , g1 , Optional.of(clazz1)).ifPresentOrElse(c -> {
+			addVisited(clazz1 , msg1); 
+			processNextStep(Map.class.cast(msg1) , g1 , c);
+		}, () -> { payload.put("inputClass1", Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , clazz2);});
+		return msg1;		
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void processNextStep(Map payload, GraphPath<Class<?>, MetaEdge> g1, Object c) {
+		payload.put("inputClass1", Class.class.cast(c).getName());
+		payload.put("nextStep", c);
+	}
+	
+	
+	private Class addVisited(Class<?> c , Object m) {
+		Map payload = Map.class.cast(m);
+		List<Class<?>> visited = List.class.cast(payload.get("visited"));
+		if (!visited.contains(c))
+			visited.add(c);
+		return c;
+	}
+	
+	@Bean("nillChannel")
+	MessageChannel nillChannel() {
+		return MessageChannels.direct("nillChannel").get();
+	}
+
+	
+	private MessageChannel checkEndpath(Object m) {
+		Map payload = Map.class.cast(m);
+		List<Class<?>> visited = List.class.cast(payload.get("visited"));
+		Class<?> nextStep = (Class<?>) payload.get("nextStep");
+
+		return Optional.ofNullable(nextStep)
+				.map(n -> {
+					GraphPath<Class<?>, MetaEdge> path = GraphPath.class.cast(payload.get("path"));
+					return  visited.contains(nextStep) ?  nillChannel() : outputChannel();
+				}).orElse(nillChannel());
+	}
+
+	
+	@Autowired
+	@Lazy(true)
+	RepositoryClassesConfig repositoryClassesConfig;
+	
+	public List<?> getRepositories(){
+		return repositoryClassesConfig.keySet().parallelStream().collect(Collectors.toList());
+	}
+	
+	public R getRepository(T instance) {
+		Object value = repositoryClassesConfig.get(instance.getClass().getSimpleName());
+		if (value ==null) throw new RuntimeException("value is null");
+		Class<R> rcls = Class.class.cast(value);
+		return 	beanFactory.getBean(rcls);
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	private   Object processaClassePayload(Object m , String classStr) {
+		try {
+			Class<T> clazzCls= Class.class.cast(beanFactory.getBeanClassLoader().loadClass(classStr));
+			Map<String,Object> payload = Map.class.cast(m);
+			T instance = populateInstance(createIntance(clazzCls) , payload);
+			List<?> result = prepareRepository(instance, payload);
+			Map<String,Object> newPayload = filterPayload(payload);
+			return processNode(objectMapper.convertValue(result, JsonNode.class) , newPayload , Class.class.cast(instance.getClass()));
+		}catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
+	@Autowired
+	ObjectMapper objectMapper;
+	
+	private  Map<String, Object> processNode(JsonNode returnNode, Map<String, Object> payload , Class<T> clzz) {
+		return Optional.ofNullable(returnNode)
+				.map(rn -> {
+					if (rn.isArray() && rn.size()>=1) 
+						for (int i = 0 ; i < rn.size() ; i++) {
+							payload.put("counter" , i);
+							processNode(rn.get(i) , payload , clzz);
+						}
+					else {
+						if (!rn.isArray()) {
+							payload.putIfAbsent("node", rn);
+							T any = objectMapper.convertValue  (rn, clzz);
+							Optional.ofNullable(any)
+							.ifPresent(any1->				
+							{ 
+								String sufix = "instance";
+								String sufixResult = Optional.ofNullable(payload.get("counter"))
+										.map(c ->{
+											return sufix+c+"_";
+										}).orElse(sufix+"_");
+
+								payload.put(sufixResult + any1.getClass().getSimpleName() , any1);
+								payload.put(any1.getClass().getSimpleName() , any1);
+								populateInstanceToPayload(any1 , payload);
+							});
+						}
+					}
+					return payload;
+				}).orElse(payload);
+	}
+	
+	private Map<String, Object> filterPayload(Map<String, Object> payload) {
+		return payload.entrySet().stream()
+				.filter(e -> e.getKey().equals("inputClass1") 	|| 
+				e.getKey().equals("inputClass2") ||
+				e.getKey().equals("visited")
+				|| e.getKey().equals("graph")
+				|| e.getKey().equals("path")
+				|| e.getKey().contains("instance[0-9]+")
+				|| e.getKey().equals("node")
+				|| e.getKey().equals("nextStep")
+				|| e.getKey().equals("parameters")
+				|| isDotNotation(e.getKey()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	private boolean isDotNotation(String key) {
+		return key.contains("[.]") && key.split("[.]").length == 2;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private <T> void populateInstanceToPayload(T pojo, Map paylod) {
+		Pattern exclusionPattern = Pattern.compile("[$]");
+		WrapDynaBean bean = new WrapDynaBean(pojo);
+		Arrays.asList(pojo.getClass().getDeclaredFields())
+		.forEach(f -> {
+			if (!exclusionPattern.matcher(f.getName()).find()) {
+					String className = f.getDeclaringClass().getSimpleName().toLowerCase();
+					String fieldName = f.getName().toLowerCase();
+					paylod.put(className+"." + fieldName, bean.get(f.getName()));
+			}
+		});
+		
+	}
+	
+	
+	public List<T> prepareRepository(T instance , Map<String,Object> payload){
+		ExampleMatcher matcher = ExampleMatcher.matchingAll().withIgnoreCase().withIgnoreNullValues();
+		Example<T> example = Example.of(instance,matcher);
+		return getRepository(instance).findAll(example , PageRequest.of(0, 2)).toList();
+	}
+	
+	@SuppressWarnings("deprecation")
+	private   T createIntance(Class<T> crtorCls) {
+		try {
+			return crtorCls.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private  T populateInstance(T instance, Map<String, Object> payload) {
+		PropertyUtilsBean util = new PropertyUtilsBean();
+		WrapDynaBean duna = new WrapDynaBean(instance);
+		Map<String,Object> parameters = Map.class.cast(payload.get("parameters"));
+		payload.putAll(parameters);
+		payload.entrySet()
+		.stream()
+		.forEach(e ->{
+			try {
+				String[] vvs = e.getKey().split("[.]");
+				if (vvs.length==2) {
+					Boolean myResult =  isClass(vvs[0], instance) || hasKey(vvs , instance);
+					if (myResult) {
+						String property = isClass(vvs[0], instance)  ? vvs[1] : getProperty(vvs,instance);
+							Field f = instance.getClass().getDeclaredField(property);
+							Object obk = ConvertUtils.convert(e.getValue(), f.getType());
+							if(obk !=null) {
+								util.setProperty(instance, f.getName(), obk);
+							}
+					}
+				}
+			} catch ( Exception e1) {
+				log.info("error {}" , e1);
+			}
+		});
+		
+		return (T) duna.getInstance();
+	}
+	
+	private boolean isNested(String key) {
+		return key.contains(".");
+	}
+
+	private String getProperty(String[] vvs, T instance) {
+		String idPart = vvs[1].substring(0,1).toUpperCase().concat(vvs[1].substring(1));
+		String classPart = vvs[0].toLowerCase();
+		return classPart + idPart;
+	}
+
+	private boolean hasKey(String[] vvs, T instance) {
+		String idPart = vvs[1].substring(0,1).toUpperCase().concat(vvs[1].substring(1));
+		String classPart = vvs[0].toLowerCase();
+		String property = classPart + idPart;
+		return Arrays.asList(instance.getClass().getDeclaredFields())
+		.stream()
+		.filter(f -> f.getName().toLowerCase().equals(property.toLowerCase()))
+		.count()>0;
+	}
+
+	private boolean isClass(String string, T instance) {
+		return instance.getClass().getSimpleName().toLowerCase().equals(string);
+	}
+
+	private boolean isField(T instance, String key) {
+		return Optional.ofNullable(key)
+		.map(k -> {
+			return checkField(instance , k);
+		}).orElse(false);
+	}
+
+	private boolean checkField(T instance, String k) {
+		String prov = k.replaceAll("[.]", "");
+		if (hasField(instance , prov)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean hasField(T instance, String prov) {
+		return Arrays.asList(instance.getClass().getDeclaredFields())
+		.stream()
+		.filter(f -> f.getName().toLowerCase().contains(prov.toLowerCase()))
+		.count() > 0;
+	}
+
+	private Optional<?> getNextPath(Object m , GraphPath<Class<?>, MetaEdge> g1, Optional<Class<?>> clazzz) {
+		return clazzz.map(c -> {
+			Map payload = Map.class.cast(m);
+			List<Class<?>> visited = List.class.cast(payload.get("visited"));
+			return g1.getEdgeList().stream()
+					.filter(e -> !visited.contains(e.getSource()))
+					.filter(e -> !visited.contains(e.getTarget()))
+					.map(e -> {
+						return processClass(e , c);
+					}).findAny().orElse(c);
+		});
+	}
+	
+	private Class processClass(MetaEdge e, Class<?> c ) {
+		return c.equals(e.getSource())? Class.class.cast(e.getTarget()):Class.class.cast(e.getSource());
+	}
 }
 

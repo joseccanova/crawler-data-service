@@ -1,4 +1,4 @@
-package org.nanotek.crawler.data.util;
+package org.nanotek.beans;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,8 +7,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import org.nanotek.beans.BeanInfo;
-import org.nanotek.beans.PropertyDescriptor;
+import org.nanotek.beans.sun.introspect.ClassInfo;
+
+import com.thoughtworks.xstream.core.BaseException;
 
 
 public class EntityBeanInfo<E> extends ClassInfo {

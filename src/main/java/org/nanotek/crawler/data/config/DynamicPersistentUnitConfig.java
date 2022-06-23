@@ -195,7 +195,7 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 					Optional<Class<?>> idClass = getIdClass(clazz1);
 					idClass.ifPresent(idc -> {
 						Class<?> repClass = repoConfig.prepareReppositoryForClass(clazz1, idc, injectionClassLoader)	;
-						repoConfig.put(repClass.getSimpleName(), repClass);
+						repoConfig.put(clazz1.getSimpleName(), repClass);
 						ControllerClassConfig ccc = controllerClassConfig();
 						try {
 							Class<?>  controllerClass = ccc.createControllerClass(cm , repClass, clazz1, idClass.get(), injectionClassLoader);
@@ -428,7 +428,7 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 	{
 		Class<?> repo = config 
 				.prepareReppositoryForClass(entity, Long.class , injectionClassLoader() );
-		config.put(repo.getName(), repo);
+		config.put(entity.getSimpleName(), repo);
 	}
 
 	@Bean("transactionManager")

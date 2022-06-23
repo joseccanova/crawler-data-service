@@ -1,5 +1,9 @@
 package org.nanotek.crawler;
 
+import java.beans.PropertyEditorManager;
+import java.util.UUID;
+
+import org.nanotek.crawler.data.util.UUIDEditor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -33,7 +37,10 @@ import de.codecentric.boot.admin.server.config.EnableAdminServer;
 @EnableMBeanExport
 public class CrawlerApplication {
 
+
+	
 	public static void main(String[] args) {
+		PropertyEditorManager.registerEditor(UUID.class, UUIDEditor.class);
 		SpringApplication.run(CrawlerApplication.class, args);
 	}
 
