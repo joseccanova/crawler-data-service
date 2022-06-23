@@ -33,7 +33,11 @@ public class RestClient {
 	}
 	
 	public Optional<Root> getMbRootMapping(){
-		
-		return Optional.ofNullable(  restTemplate.getForObject(getHomeUrl(mdDataService) + "/actuator/mappings", Root.class) );
+			
+		return 	getHomeUrl(mdDataService)
+			.map(home -> {
+				return restTemplate.getForObject(home + "/actuator/mappings", Root.class);
+			});
+			
 	}
 }

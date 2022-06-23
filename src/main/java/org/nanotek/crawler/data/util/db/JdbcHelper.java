@@ -3,12 +3,15 @@ package org.nanotek.crawler.data.util.db;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import java.beans.PropertyEditorManager;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -28,20 +31,23 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.nanotek.crawler.Base;
 import org.nanotek.crawler.BaseEntity;
 import org.nanotek.crawler.data.config.meta.IClass;
 import org.nanotek.crawler.data.config.meta.IDataAttribute;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
 import org.nanotek.crawler.data.util.buddy.BuddyBase;
-import org.nanotek.crawler.data.util.db.support.IdClassAttributeStrategyPostProcessor;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
@@ -50,6 +56,7 @@ import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.type.TypeDefinition;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
+import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import net.bytebuddy.implementation.FixedValue;
 import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
@@ -146,7 +153,7 @@ public class JdbcHelper {
 	}
 
 
-	public  Class<?>  generateBaseClass(MetaClass cm, ClassLoader classLoader) throws Exception{
+	public  Class<?>  generateBaseClass(MetaClass cm, InjectionClassLoader classLoader) throws Exception{
 		//		    	 ResultSetMetaData meta = rs.getMetaData();
 		Class<?> baseClass =  createBaseClass(cm , classLoader);
 		postProcessBaseClass(baseClass);
@@ -158,38 +165,46 @@ public class JdbcHelper {
 	private void postProcessBaseClass(Class<?> baseClass) {
 	}
 
-	public Class<?> createBaseClass(MetaClass cm, ClassLoader classLoader) {
+	public Class<?> createBaseClass(MetaClass cm, InjectionClassLoader classLoader) {
 		String myClassName = cm.getClassName();
+		String myClassName1 = prepareName(myClassName);
+		log.info( "my class name {}:",  myClassName);
 		Class<?> baseClass =  Optional.of(cm).filter(cm1 -> cm1.getMetaAttributes().stream().anyMatch(cm11 -> cm11.isId()))
 				.map(cm11 ->{
 					List<MetaDataAttribute> metaAttributes = cm11.getMetaAttributes();
-					
 					Builder bd = processClassMetaData (cm , classLoader);
 					Holder<Builder> h = new Holder<>();
 					h.put(bd);
-					fixPrimaryKey(metaAttributes);
+					fixPrimaryKey(cm);
 					metaAttributes
 					.stream()
 					.forEach(m -> {
+						m.setMetaClass(cm11);
 						checkClass(m);
 						processMetaAttribute(m , h);
 					});
 					
-					 Class<?> c = createBuddyClass(h , myClassName , classLoader);
+					 Class<?> c = createBuddyClass(h , myClassName1 , classLoader);
 					 return c;
 					}).orElse(null);
 		return baseClass;
 	}
 
-	private void fixPrimaryKey(List<MetaDataAttribute> metaAttributes) {
-		IDataAttribute pk =  metaAttributes.stream().filter(ma -> ma.isId()).findFirst().get();
-		metaAttributes.stream().forEach(ma -> {
-			if (!ma.equals(pk)) {
-				ma.setId(false);
-			}
-		});
-	}
 	
+	private void fixPrimaryKey(MetaClass cm) {
+		if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()>1) {
+			createPkClass(cm);
+		}else if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()==1){
+			log.info("class name {} " , cm.getClassName());
+		}else { 
+			throw new RuntimeException("fuck fuck fuck");
+		}
+	}
+
+	private void createPkClass(MetaClass cm) {
+			log.info("class name {} " , cm.getClassName());
+	}
+
 	private void checkClass(IDataAttribute m) {
 		if (PropertyEditorManager.findEditor(m.getClazz()) == null) {
 			if (BigDecimal.class.equals(m.getClazz())) {
@@ -202,55 +217,129 @@ public class JdbcHelper {
 		}
 	}
 
-	private Class<?> createBuddyClass(Holder<Builder> h, String myClassName, ClassLoader classLoader) {
+	private Class<?> createBuddyClass(Holder<Builder> h, String myClassName, InjectionClassLoader classLoader) {
 		Builder theBuilder = h.get().orElseThrow();
 		 Class<?> c = theBuilder.make().load(classLoader).getLoaded();
 		 Entity theEntity = c.getAnnotation(Entity.class);
+		 if (!isValidEntity(c)){ 
+			 System.err.println("IS NOT VALID ENTITY PK ---------------" + theEntity.name());
+			throw new RuntimeException();
+		 }
+		 if (isMultiplePk(c)){ 
+			 System.err.println("IS NULL PK ---------------" + theEntity.name());
+				throw new RuntimeException();
+			 }
 		 entityClassConfig.put(myClassName, c);
 		 entityClassConfig.getTypeCache().insert(classLoader, myClassName , c);
 		 System.err.println("Printing annotations for class " + theEntity.name());
+		 if (entityClassConfig.getOrDefault(c.getName(), Base.class).equals(Base.class)) {
+			 entityClassConfig.put(c.getSimpleName(), c);
+		 }else {
+			 Class<?> oldValue = entityClassConfig.get(c.getSimpleName());
+			 entityClassConfig.replace(c.getSimpleName(), oldValue, c);
+		 }
 		return c;
 	}
+	
+	private boolean isValidEntity(Class<?> c) {
+		return   Arrays.asList(c .getDeclaredFields()).stream()
+				.filter(f -> f.getAnnotation(Id.class) !=null).count()>0;
+	}
+
+	private boolean isMultiplePk(Class<?> c) {
+		return   Arrays.asList(c .getDeclaredFields()).stream()
+				.filter(f -> f.getAnnotation(Id.class) !=null).count()>1;
+	}
+	/*
+	 * 
+	 * 	@org.nanotek.crawler.data.config.meta.Id
+	@Id
+	@Column (name="id")
+	@JsonProperty(value = "id")
+	 */
 
 	private void processMetaAttribute(MetaDataAttribute m , Holder<Builder> h) {
 		try {
 			String name = Optional.ofNullable( m.getColumnName() ).orElse(m.getColumnName());
-			String fieldNAme = prepareName(m.getFieldName());
+			String fieldNAme = prepareAttributeNameName(m.getFieldName());
 			name="\""+name+"\"";	
-			log.debug("field Name " , fieldNAme);
+			log.info("field Name {}" , fieldNAme);
 			AnnotationDescription columnAnnotation =  AnnotationDescription.Builder.ofType(Column.class)
 					.define("name", name)
 					.build();
 			Class<?> ca = Class.class.cast( m.getClazz()  ).equals(Object.class) ? String.class : Class.class.cast(m.getClazz()) ;
-			AnnotationDescription idAnnotation =  AnnotationDescription.Builder.ofType(Id.class)
-					.build();
-			Builder bd1  = Optional
-					.ofNullable(m)
-					.filter(f -> f.isId())
-					.map(fname -> h.get().get() .defineProperty(fieldNAme.trim(), ca).annotateField(idAnnotation , columnAnnotation))
-					.orElse(h.get().get().defineProperty(fieldNAme.trim(), ca).annotateField(columnAnnotation));
-			h.put(bd1);
+			
+			
+			try {
+				Builder bd1  = h.get().orElseThrow();
+				if (m !=null && m.isId()) {
+					bd1 = processIdProperty(bd1 , m , fieldNAme , ca , columnAnnotation ,  m.getMetaClass());
+				}else {
+					bd1=bd1.defineProperty(fieldNAme.trim(), ca).annotateField(processColumnAnnotation(columnAnnotation));
+				}
+				h.put(bd1);
+			}catch (Exception e) {
+					log.info("error {}" , e);
+					throw new RuntimeException(e);
+				}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 			throw new RuntimeException(e1);
-		}		
+		}
+		log.info("the holder value ");
+	}
+
+	@Autowired
+	ObjectMapper mapper;
+	
+	private Builder processIdProperty(Builder bd1, MetaDataAttribute m , 
+				String fieldNAme, Class<?> ca, AnnotationDescription columnAnnotation, MetaClass mc) {
+		String fieldname = prepareAttributeNameName(m.getFieldName());
+		System.err.println("PROCESSING ID FOR CLASS " + mc.getClassName().toUpperCase());
+		System.err.println("-------------------- clsss " + mc.getClassName().toUpperCase() + "------------id " + fieldname);
+		try {
+			JsonNode ndoe =  mapper.convertValue(m, JsonNode.class);
+			StringWriter writer = new StringWriter();
+			mapper.writeValue(writer, ndoe);
+			log.info(writer.getBuffer().toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return bd1.defineProperty(fieldname.trim(), ca).annotateField(columnAnnotation).annotateField(processIdAnnotations());
+	}
+
+	private AnnotationDescription processColumnAnnotation(AnnotationDescription columnAnnotation) {
+		return columnAnnotation;
+	}
+
+	private AnnotationDescription[] processIdAnnotations() {
+		log.info("entering on process anottations");
+		return new AnnotationDescription[] {
+				AnnotationDescription.Builder.ofType(Id.class)
+						.build(),
+						AnnotationDescription.Builder.ofType(org.nanotek.crawler.data.config.meta.Id.class)
+						.build(),
+				AnnotationDescription.Builder.ofType(JsonProperty.class).define("value", "id").build()
+		}; 
 	}
 
 	private Builder processClassMetaData(IClass cm11, ClassLoader classLoader) {
 		processors.stream().forEach(p -> p.process(cm11));
 		String tableName =  cm11.getTableName();
 		String classNameCandidate = cm11.getClassName();
-		System.err.println("class name " + classNameCandidate);
 		String myClassName = prepareName(classNameCandidate);
+		System.err.println("class name " + classNameCandidate);
 		AnnotationDescription rootAnnotation =  AnnotationDescription.Builder.ofType(JsonRootName.class)
 				.define("value", myClassName)
 				.build();
 		
+		Class<?> idClass = getIdClass(cm11);
+		
 		BuddyBase bb = new BuddyBase();  
-		TypeDefinition td = TypeDescription.Generic.Builder.of(BaseEntity.class).build().asErasure();
+		TypeDefinition td = TypeDescription.Generic.Builder.parameterizedType(Base.class  , Base.class.asSubclass(BaseEntity.class) , idClass).build();
 		Builder bd = new ByteBuddy(ClassFileVersion.JAVA_V8)
-//				.subclass(td)
-				.subclass(BaseEntity.class)
+				.subclass(td)
+//				.subclass(Base.class)
 				.name(PACKAGE+myClassName)
 				.annotateType(rootAnnotation)
 //				.annotateType(infoAnnotation)
@@ -258,11 +347,19 @@ public class JdbcHelper {
 				.annotateType(new TableImpl(tableName))
 				.withHashCodeEquals()
 				.withToString()
-				.defineProperty("metaClass", MetaClass.class)
-				.annotateField(AnnotationDescription.Builder.ofType(Transient.class).build())
-				.annotateField(AnnotationDescription.Builder.ofType(JsonIgnore.class).build())
-				.method(named("getMetaClass")).intercept(FixedValue.value(cm11));
+//				.defineProperty("metaClass", MetaClass.class)
+//				.annotateField(AnnotationDescription.Builder.ofType(Transient.class).build())
+//				.annotateField(AnnotationDescription.Builder.ofType(JsonIgnore.class).build())
+				.method(named("getMetaClass")).intercept(FixedValue.value(MetaClass.class.cast(cm11)));
 			return bd;
+	}
+	
+	public Class<?> getIdClass(IClass metaClass){
+		return metaClass.getMetaAttributes()
+		.stream()
+		.filter(att -> att.isId())
+		.findAny().orElseThrow().getClazz();
+		
 	}
 
 
@@ -289,7 +386,12 @@ public class JdbcHelper {
 		return first.concat(prov.substring(1));
 	}
 
-
+	public static String prepareAttributeNameName(String classNameCandidate) {
+		String prov = snakeToCamel(classNameCandidate.replaceAll(" ", ""));
+		String first = prov.substring(0, 1).toLowerCase();
+		return first.concat(prov.substring(1));
+	}
+	
 	public  List<MetaClass> getClassMaps() throws Exception {
 
 		SchemaInfoLevelBuilder vuilder = SchemaInfoLevelBuilder.builder()
@@ -340,6 +442,7 @@ public class JdbcHelper {
 
 	private Optional<MetaClass> processMetaClass(schemacrawler.schema.Table t) {
 		MetaClass meta = new MetaClass();
+		meta.setTable(t);
 		meta.setClassName(t.getFullName());
 		String newName = processNameTranslationStrategy(t.getName());
 		meta.setClassName(newName);
@@ -365,9 +468,8 @@ public class JdbcHelper {
 				.ifPresent(v -> md.setLength(String.valueOf(v)));
 			md.setAttributes (c.getAttributes());
 			md.setSqlType(c.getType().getDatabaseSpecificTypeName());
-			if(c.isPartOfPrimaryKey() && meta.isHasPrimeraryKey() == false) {
+			if(c.isPartOfPrimaryKey() || c.isAutoIncremented()) {
 				md.setId(true);
-				meta.hasPrimaryKey(true);
 			}
 			meta.addMetaAttribute(md);
 		});

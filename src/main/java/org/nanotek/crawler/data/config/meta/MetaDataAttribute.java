@@ -3,6 +3,7 @@ package org.nanotek.crawler.data.config.meta;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.ToString;
@@ -29,11 +30,19 @@ public class MetaDataAttribute implements IDataAttribute {
 	
 	private List<String> idAliases;
 	
+	@JsonIgnore
+	private MetaClass metaClass;
+	
 	
 	public MetaDataAttribute() {
 		super();
 	}
 
+	public MetaDataAttribute(MetaClass mc) {
+		super();
+		this.metaClass=mc;
+	}
+	
 	@Override
 	public boolean isId() {
 		return isId;
@@ -133,6 +142,14 @@ public class MetaDataAttribute implements IDataAttribute {
 	@Override
 	public void setIdAliases(List<String> idAliases) {
 		this.idAliases = idAliases;
+	}
+
+	public MetaClass getMetaClass() {
+		return metaClass;
+	}
+
+	public void setMetaClass(MetaClass metaClass) {
+		this.metaClass = metaClass;
 	}
 	
 	

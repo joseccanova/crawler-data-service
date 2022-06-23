@@ -1,13 +1,13 @@
 package org.nanotek.crawler.data.config.meta;
 
-import java.util.Optional;
+import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultEdge;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * What is about, left and right is a common vocabulary on graphs representation. 
@@ -22,54 +22,37 @@ import lombok.NoArgsConstructor;
  */
 @SuppressWarnings("serial")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class MetaEdge extends DefaultEdge implements IMetaEdge{
-
-	protected Class<?> left; 
-	
-	protected Class<?> right;
-	
-	protected RelationType type; 
-	
-	
-	@Override
-	public Object getSource() {
-		return left(super.getSource());
-	}
+public class MetaEdge extends DefaultEdge  {
 
 
-	private Object left(Object object) {
-		return left = Class.class.cast(object);
-	}
+	public MetaEdge() {}
 	
-	@Override
-	public Class<?> getLeft(Object object){
-		return Class.class.cast(object);
+	public MetaEdge(Class<?> source , Class<?> target) {
+		Arrays.asList(DefaultEdge.class.getDeclaredFields())
+		.forEach(f ->{
+			f.setAccessible(true);
+			try {
+				if (f.getName().equals("source"))
+				f.set(this, source);
+				else if (f.getName().equals("target"))
+					f.set(this, target);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
 	}
 	
 	@Override
+	@JsonProperty(value = "target")
 	public Object getTarget() {
-		return right(super.getTarget());
+		return super.getTarget();
 	}
-
-
-	private Object right(Object object) {
-		return right = getRight(object);
-	}
-	
 	@Override
-	public Class<?> getRight(Object object) {
-		return Class.class.cast(object);
+	@JsonProperty(value ="source")
+	public Object getSource() {
+		return super.getSource();
 	}
 
-
-	@Override
-	public RelationType getType()
-	{ 
-		return Optional.ofNullable(type).orElse(RelationType.ONE);
-	}
-	
 }
 

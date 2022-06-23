@@ -1,15 +1,8 @@
 package org.nanotek.crawler;
 
+import java.io.Serializable;
+
 @SuppressWarnings("serial")
-public class BaseEntity<ID>
-extends Base<BaseEntity<ID> , ID> 
-
+public interface BaseEntity<ID> extends Serializable
 {
-
-	public BaseEntity() {
-		super();
-	}
-	
-	
-
 }

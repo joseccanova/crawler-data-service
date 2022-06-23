@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 
+import schemacrawler.schema.Table;
+
 @JsonInclude(value = Include.NON_NULL)
 public class MetaClass implements IClass {
 
@@ -25,6 +27,9 @@ public class MetaClass implements IClass {
 
 	@JsonIgnore
 	private boolean hasPrimeraryKey;
+
+	@JsonIgnore
+	private Table table;
 	
 
 	public MetaClass() {
@@ -82,5 +87,13 @@ public class MetaClass implements IClass {
 	@Override
 	public void setHasPrimeraryKey(boolean hasPrimeraryKey) {
 		this.hasPrimeraryKey = hasPrimeraryKey;
+	}
+
+	public void setTable(Table t) {
+		this.table = t;
+	}
+
+	public Table getTable() {
+		return table;
 	}
 }

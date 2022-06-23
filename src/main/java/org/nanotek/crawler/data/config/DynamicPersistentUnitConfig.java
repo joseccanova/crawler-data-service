@@ -55,6 +55,7 @@ import org.springframework.orm.jpa.persistenceunit.MutablePersistenceUnitInfo;
 import org.springframework.orm.jpa.persistenceunit.PersistenceUnitPostProcessor;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.client.RestTemplate;
 
 import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
@@ -131,6 +132,11 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 		return new JdbcHelper();
 	}
 
+	
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 
 	@Bean 
 	@Qualifier(value="myBf")
