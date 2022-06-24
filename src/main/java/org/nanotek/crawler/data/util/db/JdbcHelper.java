@@ -39,6 +39,7 @@ import org.nanotek.crawler.data.config.meta.IClass;
 import org.nanotek.crawler.data.config.meta.IDataAttribute;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
+import org.nanotek.crawler.data.config.meta.MetaIdentidy;
 import org.nanotek.crawler.data.config.meta.MetaRelationClass;
 import org.nanotek.crawler.data.util.buddy.BuddyBase;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
@@ -462,12 +463,19 @@ public class JdbcHelper {
 		meta.setClassName(t.getFullName());
 		String newName = processNameTranslationStrategy(t.getName());
 		meta.setClassName(newName);
-
 		meta.setTableName(t.getFullName());
+		MetaIdentidy mi = new MetaIdentidy(t.getPrimaryKey());
+		meta.setIdentity(mi);
 		t.getColumns().stream()
 		.forEach(c ->{
+			if (meta.getIdentity() !=null) {
+				String idColumnName = meta.getIdentity() !=null && meta.getIdentity().getName()!=null?  meta.getIdentity().getName() :"";
+				log.info("id column name {}".concat(idColumnName));
+			}else 
+				log.info("NULLABLE VALUE ON PRIMARY KEY {}" , meta.getTableName());
 			MetaDataAttribute md = new MetaDataAttribute();
 			Class<?> candidateClass = c.getColumnDataType().getTypeMappedClass();
+			//TODO: Enrich Editors and properties.
 			if(candidateClass.equals(BigDecimal.class)) {
 				if (c.getDecimalDigits() > 0){
 					md.setClazz(Double.class);
@@ -499,105 +507,6 @@ public class JdbcHelper {
 
 	public String processNameTranslationStrategy(String name) {
 		String newName = name.replaceAll("GRP_", "GRUPO_");
-		newName  = newName .replaceAll("PRTAL$", "PORTAL");
-		newName  = newName .replaceAll("PRTAL_", "PORTAL_");
-		newName = newName .replaceAll("MENSG$", "MENSAGEM");
-		newName = newName .replaceAll("MENSG_", "MENSAGEM_");
-		newName = newName .replaceAll("USURO_", "USUARIO_");
-		newName = newName .replaceAll("SITUC", "SITUACAO");
-		newName = newName .replaceAll("ACEIT_", "ACEITE_");
-		newName = newName .replaceAll("RGIST", "REGISTRO");
-		newName = newName .replaceAll("ACSSO", "ACESSO");
-		newName = newName .replaceAll("PRMRO", "PRIMEIRO");
-		newName = newName .replaceAll("PESOA", "PESSOA");
-		newName = newName .replaceAll("ASSES", "ASSESSORIA");
-		newName = newName .replaceAll("UNIDD", "UNIDADE");
-		newName = newName .replaceAll("NGOCO", "NEGOCIO");
-		newName = newName .replaceAll("CRTOR", "CORRETOR");
-		newName = newName .replaceAll("COMRL", "COMERCIAL");
-		newName = newName .replaceAll("ENDER$", "ENDERECO");
-		newName = newName .replaceAll("NAC$", "NACIONALIDADE");
-		newName = newName .replaceAll("ENDER_", "ENDERECO_");
-		newName = newName .replaceAll("TELEF_", "TELEFONE_");
-		newName = newName .replaceAll("HISTO_", "HISTORICO_");
-		newName = newName .replaceAll("ESTPL", "ESTIPULANTE");
-		newName = newName .replaceAll("SISTM", "SISTEMA");
-		newName = newName .replaceAll("FUCID", "FUCIONALIDADE");
-		newName = newName .replaceAll("PERFL", "PERFIL");
-		newName = newName .replaceAll("DIGTL", "DIGITAL");
-		newName = newName .replaceAll("MOTV", "MOTIVO");
-		newName = newName .replaceAll("ARQUV", "ARQUIVO");
-		newName = newName .replaceAll("SISTEM_", "SISTEMA");
-		newName = newName .replaceAll("OVDRIA", "OUVIDORIA");
-		newName = newName .replaceAll("PARAM$", "PARAMETRO");
-		newName = newName .replaceAll("PARAM_", "PARAMETRO_");
-		newName = newName .replaceAll("NAC_", "NACIONALIDADE_");
-		newName = newName .replaceAll("ACOMP$", "ACOMPANHAMENTO");
-		newName = newName .replaceAll("VRSAO", "VERSAO");
-		newName = newName .replaceAll("HISTO$", "HISTORICO");
-		newName = newName .replaceAll("PRTAL$", "PORTAL");
-		newName = newName .replaceAll("APLCC", "APOLICE");
-		newName = newName .replaceAll("FNCLD", "FUNCIONALIDADE");
-		newName = newName .replaceAll("ORIGM", "ORIGEM");
-		newName = newName .replaceAll("MBILE", "MOBILE");
-		newName = newName .replaceAll("PMCAO", "PROMOCAO");
-		newName = newName .replaceAll("PAGNA", "PAGINA");
-		newName = newName .replaceAll("CLBOR", "COLABORADOR");
-		newName = newName .replaceAll("CTRAT", "CONTRATO");
-		newName = newName .replaceAll("CATGO", "CATEGORIA");
-		newName = newName .replaceAll("EVVDA", "ENVOLVIDA");
-		newName = newName .replaceAll("TELEF_", "TELEFONE_");
-		newName = newName .replaceAll("TELEF$", "TELEFONE");
-		newName = newName .replaceAll("TMPLT", "TEMPLATE");
-		newName = newName .replaceAll("CIDAD$", "CIDADE");
-		newName = newName .replaceAll("CIDAD_", "CIDADE_");
-		newName = newName .replaceAll("BAIRR$", "BAIRRO");
-		newName = newName .replaceAll("BAIRR_", "BAIRRO_");
-		newName = newName .replaceAll("CMPLO", "COMPLEMENTO");
-		newName = newName .replaceAll("POSTL", "POSTAL");
-		newName = newName .replaceAll("SUCSL", "SUCURSAL");
-		newName = newName .replaceAll("GRENT", "GERENTE");
-		newName = newName .replaceAll("GERNC", "GERENCIA");
-		newName = newName .replaceAll("USURO", "USUARIO");
-		newName = newName .replaceAll("OFCNA", "OFICINA");
-		newName = newName .replaceAll("OFVSTRA", "OFICINA_VISTORIA");
-		newName = newName .replaceAll("CCUST", "CENTRO_CUSTO");
-		newName = newName .replaceAll("CADPAIS", "CADASTRO_PAIS");
-		newName = newName .replaceAll("CADESTA", "CADASTRO_ESTADO");
-		newName = newName .replaceAll("CADCID", "CADASTRO_CIDADE");
-		newName = newName .replaceAll("APOLI", "APOLICE");
-		newName = newName .replaceAll("IMBLR", "IMOBILIARIA");
-		newName = newName .replaceAll("ASSIT", "ASSISTENCIA");
-		newName = newName .replaceAll("TCNCA", "TECNICA");
-		newName = newName .replaceAll("MUN_FIS", "MUNICIPIO_FISCAL");
-		newName = newName .replaceAll("PAGTO", "PAGAMENTO");
-		newName = newName .replaceAll("PRDUT", "PRODUTO");
-		newName = newName .replaceAll("ITRNO", "INTERNO");
-		newName = newName .replaceAll("FORNC", "FORNECEDOR");
-		newName = newName .replaceAll("ULOGUSR", "LOG_USUARIO");
-		newName = newName .replaceAll("GRENT", "GERENTE");
-		newName = newName .replaceAll("ACSSO", "ACESSO");
-		newName = newName .replaceAll("ULTMO", "ULTMO");
-		newName = newName .replaceAll("PN$", "PARCEIRO_NEGOCIO");	
-		newName = newName .replaceAll("PREDR$", "PRESTADOR");
-		newName = newName .replaceAll("PRDUT", "PRODUTO");
-		newName = newName .replaceAll("PROTR$", "PRESTADOR1");
-		newName = newName .replaceAll("CAD_SOC", "QUADRO_SOCIETARIO");
-		newName = newName .replaceAll("QUETN", "QUESTIONARIO");
-		newName = newName .replaceAll("SERVC", "SERVICO");
-		newName = newName .replaceAll("PRCRO", "PARCEIRO_NEGOCIO");
-		newName = newName .replaceAll("RESPT", "RESPOSTA");
-		newName = newName .replaceAll("ASSIT", "ASSISTENCIA");
-		newName = newName .replaceAll("TCNCA", "TECNICA");
-		newName = newName .replaceAll("ELAPCRT", "EMAIL_CORRETOR");
-		newName = newName .replaceAll("ANALIS", "ANALISE");
-		newName = newName .replaceAll("APO_DIG", "APOLICE_DIGITAL");
-		newName = newName .replaceAll("DOCTO", "DOCUMENTO");
-		newName = newName .replaceAll("FVRTO", "FAVORITO");
-		newName = newName .replaceAll("CADTR", "CADASTRO");
-		
-		newName = newName .replaceAll("SBU[0-9]+\\_", "");
-		newName = newName .replaceAll("PTM[0-9]+\\_", "");
 		newName = newName .replaceAll("\\_[$&%.]+", "");
 		return newName;
 	}

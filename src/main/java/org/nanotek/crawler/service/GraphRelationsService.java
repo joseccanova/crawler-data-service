@@ -424,6 +424,7 @@ implements MutatorSupport<T>{
 	
 	private Map<String, Object> filterPayload(Map<String, Object> payload) {
 		return payload.entrySet().stream()
+				.filter(e -> e.getKey()!=null && !e.getKey().isEmpty() && e.getValue() !=null)
 				.filter(e -> e.getKey().equals("inputClass1") 	|| 
 				e.getKey().equals("inputClass2") ||
 				e.getKey().equals("visited")
@@ -488,7 +489,9 @@ implements MutatorSupport<T>{
 				if (vvs.length==2) {
 					Boolean myResult =  ( isClass(vvs[0], instance) || isClassProperty(vvs , instance) || hasProperty(vvs , instance));
 					if (myResult) {
-						String property = isClass(vvs[0], instance)  ? isClassProperty(vvs , instance) ? getClassProperty(vvs , instance) : vvs[1] : getProperty(vvs);
+						String property = isClass(vvs[0], instance)  ?  getClassProperty(vvs , instance) : getProperty(vvs);
+						if ( isClassProperty(vvs , instance))
+							property =  vvs[1].substring(instance.getClass().getSimpleName().length()); 
 											try {
 												PropertyInfo pd = getMethod(property , instance);
 												if(pd !=null) {
@@ -524,8 +527,7 @@ implements MutatorSupport<T>{
 	}
 
 	private boolean isClassProperty(String[] vvs, T instance) {
-		Pattern pat = Pattern.compile(vvs[0]+"id$" , Pattern.CASE_INSENSITIVE);
-		if (pat.matcher(vvs[1]).find())
+		if (vvs[1].toLowerCase().contains(instance.getClass().getSimpleName().toLowerCase()+"id"))
 			return true;
 		return false;
 	}

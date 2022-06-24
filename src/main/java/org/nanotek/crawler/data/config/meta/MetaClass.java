@@ -30,6 +30,9 @@ public class MetaClass implements IClass {
 	@JsonIgnore
 	protected List<MetaRelationClass> metaRelationsClasses;
 
+	@JsonIgnore
+	protected MetaIdentidy identity;
+	
 	public MetaClass() {
 		super();
 		metaRelationsClasses = new ArrayList<> ();
@@ -41,6 +44,16 @@ public class MetaClass implements IClass {
 		this.tableName = tableName;
 		this.className = className;
 		this.metaAttributes = metaAttributes;
+	}
+
+	
+	
+	public MetaClass(String tableName, String className, 
+					Table table) {
+		super();
+		this.tableName = tableName;
+		this.className = className;
+		this.table = table;
 	}
 
 	@Override
@@ -103,5 +116,21 @@ public class MetaClass implements IClass {
 
 	public List<MetaRelationClass> getMetaRelationsClasses() {
 		return metaRelationsClasses;
+	}
+
+	public MetaIdentidy getIdentity() {
+		return identity;
+	}
+
+	public void setIdentity(MetaIdentidy identity) {
+		this.identity = identity;
+	}
+
+	public void setMetaAttributes(List<MetaDataAttribute> metaAttributes) {
+		this.metaAttributes = metaAttributes;
+	}
+
+	public void setMetaRelationsClasses(List<MetaRelationClass> metaRelationsClasses) {
+		this.metaRelationsClasses = metaRelationsClasses;
 	}
 }
