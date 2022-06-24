@@ -109,7 +109,9 @@ public interface MutatorSupport<T>{
 		return Optional.empty();
 	}
 
-
+	public static <T> Optional<T> empty(){
+		return Optional.empty();
+	}
 	/**
 	 * Check if class is a property class (ie mutator acessor class).
 	 * 

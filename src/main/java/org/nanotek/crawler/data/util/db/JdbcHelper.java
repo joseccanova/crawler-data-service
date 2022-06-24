@@ -3,7 +3,6 @@ package org.nanotek.crawler.data.util.db;
 import static net.bytebuddy.matcher.ElementMatchers.named;
 
 import java.beans.PropertyEditorManager;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
@@ -25,7 +24,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotEmpty;
@@ -47,7 +45,6 @@ import org.nanotek.crawler.legacy.util.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.JsonNode;
