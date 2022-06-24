@@ -3,7 +3,6 @@ package org.nanotek.crawler.service;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.PropertyUtilsBean;
@@ -23,14 +21,18 @@ import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
+import org.nanotek.beans.EntityBeanInfo;
+import org.nanotek.beans.PropertyDescriptor;
+import org.nanotek.beans.sun.introspect.PropertyInfo;
 import org.nanotek.crawler.Base;
 import org.nanotek.crawler.data.SearchParameters;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
 import org.nanotek.crawler.data.config.meta.TempClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
+import org.nanotek.crawler.data.util.MutatorSupport;
+import org.nanotek.crawler.data.util.db.InstancePostProcessor;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
 import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
-import org.nanotek.crawler.data.util.db.support.MetaClassPostPorcessor;
 import org.nanotek.crawler.data.util.graph.RestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -40,6 +42,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.StringMatcher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.integration.core.MessagingTemplate;
 import org.springframework.integration.dsl.IntegrationFlow;
@@ -59,7 +62,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SpringBootConfiguration
 @EnableScheduling
-public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRepository<T, ?>> {
+public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRepository<T, ?>> 
+implements MutatorSupport<T>{
 
 	@Autowired
 	PersistenceUnityClassesConfig entityClassConfig;
@@ -67,7 +71,7 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 	@Autowired
 	RestClient restClient;
 	
-	List<MetaClassPostPorcessor<T>> instancePostProcessors = new ArrayList<>();
+	List<InstancePostProcessor<T>> instancePostProcessors = new ArrayList<>();
 	
 
 	private Graph<Class<?>, MetaEdge> entityGraph;
@@ -289,7 +293,7 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 		return IntegrationFlows.from(outputChannel())
 				.transform(m -> {
 					Map payload = Map.class.cast(m);
-					return processOutputChannelPayload(m);
+					return processOutputChannelPayload(payload);
 				})
 				.route(m -> checkEndpath(m))
 				.get();
@@ -311,10 +315,11 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 		String inputClass2 = String.class.cast(payload.get("inputClass2"));
 		Class<?> clazz2 = createClass(inputClass2).get();
 		Object msg1 =  processaClassePayload(m, inputClass1);
+		Map orElse = Map.class.cast(msg1);
 		getNextPath(m , g1 , Optional.of(clazz1)).ifPresentOrElse(c -> {
 			addVisited(clazz1 , msg1); 
 			processNextStep(Map.class.cast(msg1) , g1 , c);
-		}, () -> { payload.put("inputClass1", Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , clazz2);});
+		}, () -> { orElse.put("inputClass1", Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , clazz2);});
 		return msg1;		
 	}
 	
@@ -424,7 +429,7 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 				e.getKey().equals("visited")
 				|| e.getKey().equals("graph")
 				|| e.getKey().equals("path")
-				|| e.getKey().contains("instance[0-9]+")
+				|| e.getKey().split("instance[0-9]+").length>1
 				|| e.getKey().equals("node")
 				|| e.getKey().equals("nextStep")
 				|| e.getKey().equals("parameters")
@@ -433,7 +438,7 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 	}
 
 	private boolean isDotNotation(String key) {
-		return key.contains("[.]") && key.split("[.]").length == 2;
+		return key.contains(".") && key.split("[.]").length == 2;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -453,7 +458,7 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 	
 	
 	public List<T> prepareRepository(T instance , Map<String,Object> payload){
-		ExampleMatcher matcher = ExampleMatcher.matchingAll().withIgnoreCase().withIgnoreNullValues();
+		ExampleMatcher matcher = ExampleMatcher.matchingAll().withStringMatcher(StringMatcher.CONTAINING). withIgnoreCase().withIgnoreNullValues();
 		Example<T> example = Example.of(instance,matcher);
 		return getRepository(instance).findAll(example , PageRequest.of(0, 2)).toList();
 	}
@@ -470,51 +475,94 @@ public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRep
 	
 	@SuppressWarnings("unchecked")
 	private  T populateInstance(T instance, Map<String, Object> payload) {
+		
+		
 		PropertyUtilsBean util = new PropertyUtilsBean();
-		WrapDynaBean duna = new WrapDynaBean(instance);
 		Map<String,Object> parameters = Map.class.cast(payload.get("parameters"));
 		payload.putAll(parameters);
 		payload.entrySet()
 		.stream()
 		.forEach(e ->{
 			try {
-				String[] vvs = e.getKey().split("[.]");
+				String[] vvs = Optional.ofNullable(e).filter(e1 -> isNested(e1.getKey())).map(e1 -> e1.getKey().split("[.]")).orElse(new String[0]);//e.getKey().split("[.]");
 				if (vvs.length==2) {
-					Boolean myResult =  isClass(vvs[0], instance) || hasKey(vvs , instance);
+					Boolean myResult =  ( isClass(vvs[0], instance) || isClassProperty(vvs , instance) || hasProperty(vvs , instance));
 					if (myResult) {
-						String property = isClass(vvs[0], instance)  ? vvs[1] : getProperty(vvs,instance);
-							Field f = instance.getClass().getDeclaredField(property);
-							Object obk = ConvertUtils.convert(e.getValue(), f.getType());
-							if(obk !=null) {
-								util.setProperty(instance, f.getName(), obk);
-							}
-					}
+						String property = isClass(vvs[0], instance)  ? isClassProperty(vvs , instance) ? getClassProperty(vvs , instance) : vvs[1] : getProperty(vvs);
+											try {
+												PropertyInfo pd = getMethod(property , instance);
+												if(pd !=null) {
+													Object result = ConvertUtils.convert(e.getValue(),pd.getPropertyType());
+													if(result !=null) {
+														log.info("SETTING PROPERTY FOR BEAN {} {} " , instance , result);
+														pd.getWriteMethod().invoke(instance, result);
+														log.info(" BEAN AFTER METHOD INVOKE {} " , instance );
+													}
+												}
+											}catch(Exception ex){
+												log.info("error {}" , ex);
+											}
+									}
+						
 				}
 			} catch ( Exception e1) {
 				log.info("error {}" , e1);
 			}
 		});
 		
-		return (T) duna.getInstance();
+		return instance;
 	}
 	
+	private String getClassProperty(String[] vvs, T instance) {
+		String property = vvs[1];
+		EntityBeanInfo beanInfo = new EntityBeanInfo(instance.getClass());
+		return beanInfo.getProperties()
+		.entrySet()
+		.stream()
+		.filter(e -> e.getKey().equalsIgnoreCase(property))
+		.map(e -> e.getKey()).findFirst().orElse(null);
+	}
+
+	private boolean isClassProperty(String[] vvs, T instance) {
+		Pattern pat = Pattern.compile(vvs[0]+"id$" , Pattern.CASE_INSENSITIVE);
+		if (pat.matcher(vvs[1]).find())
+			return true;
+		return false;
+	}
+
+	private PropertyInfo getMethod(String key, T instance) {
+		EntityBeanInfo beanInfo = new EntityBeanInfo(instance.getClass());
+		return beanInfo.getProperties()
+		.entrySet()
+		.stream()
+		.filter(e -> e.getKey().equalsIgnoreCase(key))
+		.map(e -> e.getValue()).findFirst().orElse(null);
+	}
+
+	private PropertyDescriptor newPropertyDescriptor(String name, T instance) {
+		 try {
+			 	return new PropertyDescriptor(name , instance.getClass());
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new  RuntimeException(e);
+		}
+	}
+
 	private boolean isNested(String key) {
 		return key.contains(".");
 	}
 
-	private String getProperty(String[] vvs, T instance) {
+	private String getProperty(String[] vvs) {
 		String idPart = vvs[1].substring(0,1).toUpperCase().concat(vvs[1].substring(1));
 		String classPart = vvs[0].toLowerCase();
 		return classPart + idPart;
 	}
 
-	private boolean hasKey(String[] vvs, T instance) {
-		String idPart = vvs[1].substring(0,1).toUpperCase().concat(vvs[1].substring(1));
-		String classPart = vvs[0].toLowerCase();
-		String property = classPart + idPart;
+	private boolean hasProperty(String[] vvs, T instance) {
+		String property = getProperty(vvs);
 		return Arrays.asList(instance.getClass().getDeclaredFields())
 		.stream()
-		.filter(f -> f.getName().toLowerCase().equals(property.toLowerCase()))
+		.filter(f -> f.getName().equalsIgnoreCase(property))
 		.count()>0;
 	}
 

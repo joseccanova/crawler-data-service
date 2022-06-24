@@ -39,6 +39,7 @@ import org.nanotek.crawler.data.config.meta.IClass;
 import org.nanotek.crawler.data.config.meta.IDataAttribute;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
+import org.nanotek.crawler.data.config.meta.MetaRelationClass;
 import org.nanotek.crawler.data.util.buddy.BuddyBase;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
@@ -62,6 +63,7 @@ import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import net.bytebuddy.implementation.FixedValue;
 import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
+import schemacrawler.schema.ForeignKey;
 import schemacrawler.schemacrawler.LimitOptionsBuilder;
 import schemacrawler.schemacrawler.LoadOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaCrawlerOptions;
@@ -452,6 +454,10 @@ public class JdbcHelper {
 
 	private Optional<MetaClass> processMetaClass(schemacrawler.schema.Table t) {
 		MetaClass meta = new MetaClass();
+		t.getForeignKeys().stream()
+		.forEach(f ->{
+			processForeignKey(f , meta);
+		});
 		meta.setTable(t);
 		meta.setClassName(t.getFullName());
 		String newName = processNameTranslationStrategy(t.getName());
@@ -486,6 +492,11 @@ public class JdbcHelper {
 		return  Optional.of(meta);	
 	}
 	
+	private void processForeignKey(ForeignKey f, MetaClass meta) {
+		MetaRelationClass mrc = new MetaRelationClass(f);
+		meta.addMetaRelationClass(mrc);
+	}
+
 	public String processNameTranslationStrategy(String name) {
 		String newName = name.replaceAll("GRP_", "GRUPO_");
 		newName  = newName .replaceAll("PRTAL$", "PORTAL");

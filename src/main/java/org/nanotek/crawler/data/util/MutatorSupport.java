@@ -36,7 +36,7 @@ public interface MutatorSupport<T>{
 
 	
 
-	static <Z> Optional<? super Z> getProperty(String propertyName,Object instance) { 
+	public static <Z> Optional<? super Z> getProperty(String propertyName,Object instance) { 
 		return getPropertyDescriptors(instance.getClass())
 				.map(ps->{
 					PropertyDescriptor z = null;
@@ -53,7 +53,7 @@ public interface MutatorSupport<T>{
 	}
 	
 	//TODO: define a criteria verify parameters from readmethod
-	static Object read(Method readMethod, Object instance) {
+	public  static Object read(Method readMethod, Object instance) {
 		try{
 			return readMethod.invoke(instance, new Object[] {});
 		}catch(Exception ex) { 
@@ -70,7 +70,7 @@ public interface MutatorSupport<T>{
 		}
 	}
 
-	static Optional<PropertyDescriptor[]> getPropertyDescriptors(Class<?> type) { 
+	public static Optional<PropertyDescriptor[]> getPropertyDescriptors(Class<?> type) { 
 		try {
 			EntityBeanInfo<?> beanInfo = new EntityBeanInfo<>(type);
 			PropertyDescriptor[] desc = beanInfo.getPropertyDescriptorInfo().values()
@@ -83,7 +83,7 @@ public interface MutatorSupport<T>{
 		return Optional.empty();
 	}
 
-	static Optional<Collection<PropertyDescriptor>> getPropertyDescriptorsCollection(Class<?> type) { 
+	public static Optional<Collection<PropertyDescriptor>> getPropertyDescriptorsCollection(Class<?> type) { 
 		try {
 			EntityBeanInfo<?> beanInfo = new EntityBeanInfo<>(type);
 			return Optional.ofNullable(beanInfo.getPropertyDescriptorInfo().values());
@@ -98,7 +98,7 @@ public interface MutatorSupport<T>{
 	 * @param type
 	 * @return
 	 */
-	static Optional<PropertyDescriptor> getPropertyDescriptor(Class<?> type) { 
+	public static Optional<PropertyDescriptor> getPropertyDescriptor(Class<?> type) { 
 		try {
 			PropertyDescriptor[] desc = MutatorSupport.getPropertyDescriptors(type).get();
 			if (desc ==null || desc.length != 1) return Optional.empty();
@@ -116,7 +116,7 @@ public interface MutatorSupport<T>{
 	 * @param type
 	 * @return
 	 */
-	static boolean isPropertyBean(Class<?> clazz) {
+	public static boolean isPropertyBean(Class<?> clazz) {
 		try {	
 			BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
 			PropertyDescriptor[] desc = beanInfo.getPropertyDescriptors();

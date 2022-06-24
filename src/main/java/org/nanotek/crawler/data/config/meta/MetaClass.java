@@ -1,16 +1,12 @@
 package org.nanotek.crawler.data.config.meta;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRootName;
 
 import schemacrawler.schema.Table;
 
@@ -29,11 +25,14 @@ public class MetaClass implements IClass {
 	private boolean hasPrimeraryKey;
 
 	@JsonIgnore
-	private Table table;
-	
+	protected Table table;
+
+	@JsonIgnore
+	protected List<MetaRelationClass> metaRelationsClasses;
 
 	public MetaClass() {
 		super();
+		metaRelationsClasses = new ArrayList<> ();
 	}
 
 	public MetaClass(String tableName, String className, 
@@ -95,5 +94,14 @@ public class MetaClass implements IClass {
 
 	public Table getTable() {
 		return table;
+	}
+
+	public void addMetaRelationClass(MetaRelationClass mrc) {
+		this.metaRelationsClasses.add(mrc);
+		
+	}
+
+	public List<MetaRelationClass> getMetaRelationsClasses() {
+		return metaRelationsClasses;
 	}
 }
