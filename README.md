@@ -27,3 +27,7 @@ WTF
 ####But I've come to far to go back now
 
 Egg First.. https://www.youtube.com/watch?v=r2GEb4MrkvU&list=RDGMEMHDXYb1_DDSgDsobPsOFxpA&index=14
+
+-------------------------
+###Maybe could help on this topic... 
+https://martinfowler.com/data/
