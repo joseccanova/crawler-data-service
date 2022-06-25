@@ -438,7 +438,6 @@ public class JdbcHelper {
 				.withLoadOptions(loadOptionsBuilder.toOptions());
 
 		Connection connection = dataSource.getConnection();
-
 		
 				final Catalog  catalog = SchemaCrawlerUtility.getCatalog(connection, options);
 				Collection<schemacrawler.schema.Table> tables = catalog.getTables();
