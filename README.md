@@ -142,3 +142,7 @@ dont came being a burglar reinventing the wheel..
 the principle of computing is "the right thing will born from inside.. dont worry"
 
 that is the "thing" the smallest of the righteous... 
+
+https://www.youtube.com/watch?v=5ZH2it92ZmA
+
+what the programmer need is a machine that represents a machine...
