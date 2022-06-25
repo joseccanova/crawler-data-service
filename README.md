@@ -244,4 +244,6 @@ if you are immutable... that best that i call you ... something close of noting.
 
 a memory... something that to gain some meaning.. will be thrown to the 0´s and 1´s but with a time at side.. 
 
-so immutability is a rule a thumb when you need to define "something (the impedance borning)"... because something is complex...
+being realistic... must use the "class" metamodel... os persistence jpa.
+
+by the end the name strategy that is used on the columns to generate the schema is wrong. 

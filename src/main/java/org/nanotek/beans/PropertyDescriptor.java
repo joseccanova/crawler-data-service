@@ -99,23 +99,23 @@ public class PropertyDescriptor extends FeatureDescriptor {
         if (beanClass == null) {
             throw new IntrospectionException("Target Bean class is null");
         }
-        if (propertyName == null || propertyName.length() == 0) {
+        if (propertyName == null || propertyName.isEmpty()) {
             throw new IntrospectionException("bad property name");
         }
-        if ("".equals(readMethodName) || "".equals(writeMethodName)) {
-            throw new IntrospectionException("read or write method name should not be the empty string");
-        }
+	//        if ("".equals(readMethodName) || "".equals(writeMethodName)) {
+	//            throw new IntrospectionException("read or write method name should not be the empty string");
+	//        }
         setName(propertyName);
         setClass0(beanClass);
 
         this.readMethodName = readMethodName;
-        if (readMethodName != null && getReadMethod() == null) {
-            throw new IntrospectionException("Method not found: " + readMethodName);
-        }
+//        if (readMethodName != null && getReadMethod() == null) {
+//            throw new IntrospectionException("Method not found: " + readMethodName);
+//        }
         this.writeMethodName = writeMethodName;
-        if (writeMethodName != null && getWriteMethod() == null) {
-            throw new IntrospectionException("Method not found: " + writeMethodName);
-        }
+//        if (writeMethodName != null && getWriteMethod() == null) {
+//            throw new IntrospectionException("Method not found: " + writeMethodName);
+//        }
         // If this class or one of its base classes allow PropertyChangeListener,
         // then we assume that any properties we discover are "bound".
         // See Introspector.getTargetPropertyInfo() method.

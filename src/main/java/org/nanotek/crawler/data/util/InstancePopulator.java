@@ -3,11 +3,13 @@ package org.nanotek.crawler.data.util;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import org.apache.commons.beanutils.ConvertUtils;
 import org.nanotek.beans.EntityBeanInfo;
 import org.nanotek.beans.sun.introspect.PropertyInfo;
 import org.nanotek.crawler.data.stereotype.Populator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,13 +18,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 
+	@Autowired
+	SearchContextPayloadFilter  payloadFilter; 
+	
 	public InstancePopulator() {}
 	
 	@Override
 	public T populate(T instance, Map<String, Object> payload) {
+		payload.put("beanInstance", instance);
 		Map<String,Object> parameters = Map.class.cast(payload.get("parameters"));
 		payload.putAll(parameters);
-		payload.entrySet()
+		Map<String,Object> filteredPayload = payloadFilter.apply(payload);
+		filteredPayload.entrySet()
 		.stream()
 		.forEach(e ->{
 			try {
@@ -32,15 +39,20 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 					boolean canBeClass =   isClass(vvs[0], instance);
 					boolean canBeClassProperty = isClassProperty(vvs , instance) ;
 					boolean isProperty = hasProperty(vvs , instance);
+//					precedence on result to avoid side effects.. 
+					String propertyStr = null;
 					
+					//in matter of fact each of these things will return an interesting thing
+					if (canBeClass) {
+						propertyStr=getClassProperty(vvs,instance);
+					}else if (isClassProperty(vvs , instance)){
+						propertyStr=vvs[0]+"id";
+					}
 					Boolean myResult =  isProperty || canBeClassProperty|| canBeClass ;
 
-					if (myResult) {
-						String property =  isProperty ?   getProperty(vvs) : getClassProperty(vvs , instance);
-						if ( isClassProperty(vvs , instance))
-							property =  vvs[1].substring(instance.getClass().getSimpleName().length()); 
+					if (myResult && propertyStr!=null) {
 											try {
-												PropertyInfo pd = getMethod(property , instance);
+												PropertyInfo pd = getMethod(propertyStr , instance);
 												if(pd !=null) {
 													Object result = convert(e.getValue(),pd.getPropertyType());
 													if(result !=null) {
@@ -94,7 +106,8 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 	}
 
 	private boolean isClassProperty(String[] vvs, T instance) {
-		if (vvs[1].toLowerCase().contains(instance.getClass().getSimpleName().toLowerCase()+"id"))
+		Pattern pat = Pattern.compile(vvs[0] , Pattern.CASE_INSENSITIVE);
+		if (pat.matcher(vvs[1]).find())
 			return true;
 		return false;
 	}
@@ -113,9 +126,7 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 	}
 	
 	private String getProperty(String[] vvs) {
-		String idPart = vvs[1].substring(0,1).toUpperCase().concat(vvs[1].substring(1));
-		String classPart = vvs[0].toLowerCase();
-		return classPart + idPart;
+		return  vvs[1].toLowerCase();
 	}
 
 }

@@ -195,9 +195,14 @@ public class JdbcHelper {
 
 	
 	private void fixPrimaryKey(MetaClass cm) {
-		if (cm.getMetaRelationsClasses().size()>0) {
-			
-		}else {
+		
+		Optional.ofNullable(cm.getIdentity())
+		.ifPresentOrElse(i->checkKeyAttributes(i , cm), ()->{
+			processByClassHeuristics(cm);
+		});
+	}
+
+	private void processByClassHeuristics(MetaClass cm) {
 			if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()>1) {
 				createPkClass(cm);
 			}else if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()==1){
@@ -205,7 +210,28 @@ public class JdbcHelper {
 			}else { 
 				throw new RuntimeException("fuck fuck fuck");
 			}
-		}
+		return;
+	}
+
+	private void checkKeyAttributes(MetaIdentidy i, MetaClass cm) {
+		i.getColumns()
+		.forEach(c -> {
+			cm.getMetaAttributes()
+			.stream()
+			.forEach(att ->{
+				equalsIgnoreCase( att.getColumnName() , c.getName())
+				.ifPresent(eq ->{
+					if(eq) {
+						att.setId(true);
+					}
+				});
+			});
+		});
+		return ;
+	}
+
+	private Optional<Boolean> equalsIgnoreCase(String columnName, String name) {
+		return Optional.ofNullable(columnName).map(cn -> cn.equalsIgnoreCase(name));
 	}
 
 	private void createPkClass(MetaClass cm) {
@@ -334,9 +360,8 @@ public class JdbcHelper {
 				AnnotationDescription.Builder.ofType(Id.class)
 						.build(),
 						AnnotationDescription.Builder.ofType(org.nanotek.crawler.data.config.meta.Id.class)
-						.build(),
-				AnnotationDescription.Builder.ofType(JsonProperty.class).define("value", "id").build()
-		}; 
+						.build()
+						}; 
 	}
 
 	private Builder processClassMetaData(IClass cm11, ClassLoader classLoader) {
