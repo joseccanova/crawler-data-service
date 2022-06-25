@@ -444,12 +444,12 @@ public class JdbcHelper {
 				Collection<schemacrawler.schema.Table> tables = catalog.getTables();
 				
 				return tables.parallelStream()
-						.filter(t1 -> t1.getColumns().size()>0)
-							.map(t -> processMetaClass(t))
-							.filter(m -> m.isPresent())
-							.map(m->m.get())
-							.collect(Collectors.toList());
-	}
+								.filter(t1 -> t1.getColumns().size()>0)
+								.map(t -> processMetaClass(t))
+								.filter(m -> m.isPresent())
+								.map(m->m.get())
+								.collect(Collectors.toList());
+		}
 
 	private Optional<MetaClass> processMetaClass(schemacrawler.schema.Table t) {
 		MetaClass meta = new MetaClass();
