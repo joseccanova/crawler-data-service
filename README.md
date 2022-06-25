@@ -84,7 +84,7 @@ i´m permitted to ignore the news...
 the stamp of my father... the love for the ears.. 
 https://www.youtube.com/watch?v=6zTc2hD2npA
 and the good music..
-in the practice ... i don´t miss him.. because the teach me to hate the death.. 
+in the practice ... i don´t miss him.. because he teach me to hate the death.. 
 the worst enemy.. 
 "Just more one falling soldier facing the monster..."
 such phrase is reserved just for honest people..
