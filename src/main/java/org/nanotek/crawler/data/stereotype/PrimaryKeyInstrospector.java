@@ -1,4 +1,4 @@
-package org.nanotek.crawler.data.util.db;
+package org.nanotek.crawler.data.stereotype;
 
 public interface PrimaryKeyInstrospector {
 

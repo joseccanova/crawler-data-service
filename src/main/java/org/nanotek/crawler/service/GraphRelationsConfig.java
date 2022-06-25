@@ -24,10 +24,10 @@ import org.nanotek.crawler.data.SearchParameters;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
 import org.nanotek.crawler.data.config.meta.TempClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
+import org.nanotek.crawler.data.stereotype.InstancePostProcessor;
 import org.nanotek.crawler.data.util.InstancePopulator;
 import org.nanotek.crawler.data.util.MutatorSupport;
 import org.nanotek.crawler.data.util.PayloadFilter;
-import org.nanotek.crawler.data.util.db.InstancePostProcessor;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
 import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
 import org.nanotek.crawler.data.util.graph.RestClient;
@@ -59,7 +59,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @SpringBootConfiguration
 @EnableScheduling
-public class GraphRelationsService<T extends Base<?,?> , R extends EntityBaseRepository<T, ?>> 
+public class GraphRelationsConfig<T extends Base<?,?> , R extends EntityBaseRepository<T, ?>> 
 implements MutatorSupport<T>{
 
 	@Autowired
@@ -82,7 +82,7 @@ implements MutatorSupport<T>{
 		.map(e -> Map.entry(e, entityClassConfig.get(e)) ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 	
-	public GraphRelationsService() {
+	public GraphRelationsConfig() {
 	}
 
 	public Graph<Class<?> , MetaEdge>   mountRelationGraph() {
@@ -428,7 +428,7 @@ implements MutatorSupport<T>{
 
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <T> void populateInstanceToPayload(T pojo, Map paylod) {
+	private <T> void populateInstanceToPayload(T pojo, Map payload) {
 		Pattern exclusionPattern = Pattern.compile("[$]");
 		WrapDynaBean bean = new WrapDynaBean(pojo);
 		Arrays.asList(pojo.getClass().getDeclaredFields())
@@ -436,7 +436,7 @@ implements MutatorSupport<T>{
 			if (!exclusionPattern.matcher(f.getName()).find()) {
 					String className = f.getDeclaringClass().getSimpleName().toLowerCase();
 					String fieldName = f.getName().toLowerCase();
-					paylod.put(className+"." + fieldName, bean.get(f.getName()));
+					payload.put(className+"." + fieldName, bean.get(f.getName()));
 			}
 		});
 		

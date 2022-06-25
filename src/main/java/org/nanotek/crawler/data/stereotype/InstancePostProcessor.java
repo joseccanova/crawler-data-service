@@ -1,4 +1,4 @@
-package org.nanotek.crawler.data.util.db;
+package org.nanotek.crawler.data.stereotype;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
@@ -13,7 +13,7 @@ import org.apache.commons.beanutils.WrapDynaBean;
 public interface InstancePostProcessor<T> {
 
 	default T populateInstance(T instance , Map<String,Object> payload) {
-		Map<String,Object> filtered = new PayloadFilter(){}.filterPayload(payload);
+		Map<String,Object> filtered = new PayloadPropertyFilter(){}.filterPayload(payload);
 		WrapDynaBean wp = whithDynaBean (instance);
 		Arrays.asList(instance.getClass().getDeclaredFields())
 		.stream()

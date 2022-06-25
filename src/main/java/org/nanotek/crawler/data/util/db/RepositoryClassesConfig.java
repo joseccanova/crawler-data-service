@@ -25,7 +25,6 @@ import java.util.function.ToLongFunction;
 import javax.persistence.Entity;
 
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
-import org.nanotek.crawler.data.util.Cache;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.repository.RepositoryDefinition;
 import org.springframework.stereotype.Repository;
@@ -35,7 +34,6 @@ import net.bytebuddy.ClassFileVersion;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.description.type.TypeDescription.Generic;
-import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 
 public class RepositoryClassesConfig   {
 

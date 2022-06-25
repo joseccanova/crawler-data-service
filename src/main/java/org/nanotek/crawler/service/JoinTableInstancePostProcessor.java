@@ -2,7 +2,7 @@ package org.nanotek.crawler.service;
 
 import java.util.Map;
 
-import org.nanotek.crawler.data.util.db.InstancePostProcessor;
+import org.nanotek.crawler.data.stereotype.InstancePostProcessor;
 
 public interface JoinTableInstancePostProcessor<T> extends InstancePostProcessor<T> {
 

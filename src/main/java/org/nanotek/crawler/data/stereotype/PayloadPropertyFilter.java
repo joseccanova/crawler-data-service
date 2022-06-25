@@ -1,4 +1,4 @@
-package org.nanotek.crawler.data.util.db;
+package org.nanotek.crawler.data.stereotype;
 
 import java.beans.PropertyEditorManager;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public interface PayloadFilter {
+public interface PayloadPropertyFilter {
 
 	default Map<String,Object> filterPayload(Map<String,Object> payload){
 		return payload.entrySet()

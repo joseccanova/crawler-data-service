@@ -3,7 +3,7 @@ package org.nanotek.crawler.data;
 import java.util.Map;
 
 import org.jgrapht.Graph;
-import org.nanotek.crawler.service.GraphRelationsService;
+import org.nanotek.crawler.service.GraphRelationsConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +26,7 @@ public class GraphController {
 
 	
 	@Autowired
-	GraphRelationsService<?,?> relationService;
+	GraphRelationsConfig<?,?> relationService;
 	
 	@GetMapping(path="/classes")
 	public ResponseEntity<Map<?,?>> getClasses(){
