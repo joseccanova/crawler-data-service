@@ -155,3 +155,8 @@ https://www.youtube.com/watch?v=9ZDAYg196x8
 
 even the worst shit responds.. :-)
 
+its like when i ask ... you dont "all the mathemathics" behing ORM?
+
+do you think that "is a matter of hibernate"?
+
+all that new math that appears every day...
