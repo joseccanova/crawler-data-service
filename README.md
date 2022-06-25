@@ -64,3 +64,27 @@ Mr Woods... https://www.youtube.com/watch?v=K5DoQnZA0oI
 *cognac is life... with rum and gym.. https://www.youtube.com/watch?v=yRh-dzrI4Z4*
 
 its not a "small algorithm" solving a problem.. its all in the "possible small  space".. a solution is a solution... 
+
+I will blame the cognac... but i remembered two things.. 
+
+first is like you are in China by the 15th century...like a guest in some sort "chinese celebration (just like in the movies hum?)"
+than that old man  ignate some shit inside a can and that shit thows some colored heave paper all around.. 
+every body smiles ... you look to that old man and think ... you are with a "good shit"
+the concept of java is the best... 
+
+I will virtualize a machine for you... than you build your own machine... 
+
+in a microsystem if possible...
+now if you transform this is a polymorphic machine.. 
+than you will learn me.. 
+
+and god is good with me... 
+i´m permitted to ignore the news... 
+
+the stamp of my father... the love for the ears.. 
+https://www.youtube.com/watch?v=6zTc2hD2npA
+and the good music..
+in the practice ... i don´t miss him.. because the teach me to hate the death.. 
+the worst enemy.. 
+"Just more one falling soldier facing the monster..."
+such phrase is reserved just for honest people..
