@@ -28,8 +28,7 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 		payload.put("beanInstance", instance);
 		Map<String,Object> parameters = Map.class.cast(payload.get("parameters"));
 		payload.putAll(parameters);
-		Map<String,Object> filteredPayload = payloadFilter.apply(payload);
-		filteredPayload.entrySet()
+		payloadFilter.apply(payload).entrySet()
 		.stream()
 		.forEach(e ->{
 			try {
@@ -39,6 +38,7 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 					boolean canBeClass =   isClass(vvs[0], instance);
 					boolean canBeClassProperty = isClassProperty(vvs , instance) ;
 					boolean isProperty = hasProperty(vvs , instance);
+					boolean isClassIdProperty = isClassId(vvs , instance);
 //					precedence on result to avoid side effects.. 
 					String propertyStr = null;
 					
@@ -47,6 +47,9 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 						propertyStr=getClassProperty(vvs,instance);
 					}else if (isClassProperty(vvs , instance)){
 						propertyStr=vvs[0]+"id";
+					}else if (isClassIdProperty)
+					{ 
+						propertyStr = vvs[1].substring(instance.getClass().getSimpleName().length());
 					}
 					Boolean myResult =  isProperty || canBeClassProperty|| canBeClass ;
 
@@ -71,6 +74,13 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 		return instance;
 	}
 	
+	private boolean isClassId(String[] vvs, T instance) {
+		if (vvs[1].length() < instance.getClass().getSimpleName().length())
+			return false;
+		String subs = vvs[1].substring(instance.getClass().getSimpleName().length());
+		return getMethod(subs, instance)!=null;
+	}
+
 	private void invoke(PropertyInfo pd, T instance, Object result) {
 		try {
 				pd.getWriteMethod().invoke(instance, result);
@@ -106,8 +116,7 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 	}
 
 	private boolean isClassProperty(String[] vvs, T instance) {
-		Pattern pat = Pattern.compile(vvs[0] , Pattern.CASE_INSENSITIVE);
-		if (pat.matcher(vvs[1]).find())
+		if(getMethod(vvs[0]+"id", instance) !=null)
 			return true;
 		return false;
 	}

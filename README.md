@@ -247,3 +247,11 @@ a memory... something that to gain some meaning.. will be thrown to the 0´s and
 being realistic... must use the "class" metamodel... os persistence jpa.
 
 by the end the name strategy that is used on the columns to generate the schema is wrong. (for the legacy keys.)
+
+name strategy is quite bugged... almost being compeled to do the things at the right manner.. 
+
+but let go a little bit far... conventionate the payload transfer since is a "context payload"..
+
+that object serialize it's properties also like class+property.
+
+https://www.youtube.com/watch?v=iZndVv-jl-U

@@ -20,7 +20,9 @@ import org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.nanotek.crawler.Base;
+import org.nanotek.crawler.BaseEntity;
 import org.nanotek.crawler.data.SearchParameters;
+import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
 import org.nanotek.crawler.data.config.meta.TempClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
@@ -52,6 +54,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
+import schemacrawler.schema.Table;
 
 //TODO: Remodel this class to construct a graph based on MetaClassVertex's and MetaEdge's
 
@@ -145,16 +148,17 @@ implements MutatorSupport<T>{
 		.parallelStream()
 		.filter(v2 -> ! v.equals(entityClassConfig.get(v2)))
 		.forEach(e -> verifyRelation (theGraph , v , entityClassConfig.get(e)));
-
 		return true;
 	}
 
 
 	private  void verifyRelation(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1) {
+			Class<T> cls1 = (Class<T>)v;
+			Class<T> cls2 = (Class<T>)v1;
+			verifyForeignKeys(entityGraph , Optional.ofNullable(cls1) , Optional.ofNullable(cls2) );
 			processeRelationField( theGraph, v,v1);
 	}
-
-
+	
 	private void processeRelationField(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1) {
 		if(!theGraph.containsVertex(v1)){
 			log.info("vertex1 added {}" , v1 );
@@ -260,6 +264,29 @@ implements MutatorSupport<T>{
 		}
 		return entityGraph;
 	}
+	
+	private void verifyForeignKeys(Graph<Class<?>, MetaEdge> entityGraph2, Optional<Class<T>> clazz1,
+			Optional<Class<T>> clazz2) {
+		clazz2.ifPresent(c ->{
+				T instance = createIntance(c);
+				MetaClass meta = instance.getMetaClass();
+				meta.getMetaRelationsClasses()
+				.stream()
+				.forEach(mr ->{
+					Table tt = mr.getForeignKeyTable();
+					T instance2 = createIntance(clazz1.get());
+					if (instance2.getMetaClass().getTableName().equals(tt.getFullName())) {
+						if(!entityGraph2.containsVertex(clazz2.get())){
+							entityGraph2.addVertex(clazz2.get());
+							entityGraph2.addEdge(clazz1.get(), clazz2.get());
+						}else {
+							entityGraph2.addEdge(clazz1.get(), clazz1.get());
+						}
+					}
+				});
+		});
+	}
+
 	private Optional<Class<T>> createClass(String classStr){
 		try {
 			return  Optional.ofNullable( (Class<T>) beanFactory.getBeanClassLoader().loadClass(classStr));
@@ -434,7 +461,7 @@ implements MutatorSupport<T>{
 	public List<T> prepareRepository(T instance , Map<String,Object> payload){
 		ExampleMatcher matcher = ExampleMatcher.matchingAll().withStringMatcher(StringMatcher.CONTAINING). withIgnoreCase().withIgnoreNullValues();
 		Example<T> example = Example.of(instance,matcher);
-		return getRepository(instance).findAll(example , PageRequest.of(0, 2)).toList();
+		return getRepository(instance).findAll(example , PageRequest.of(0, 1000)).toList();
 	}
 	
 	@SuppressWarnings("deprecation")
