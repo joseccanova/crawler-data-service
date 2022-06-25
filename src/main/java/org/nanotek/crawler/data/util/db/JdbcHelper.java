@@ -195,12 +195,16 @@ public class JdbcHelper {
 
 	
 	private void fixPrimaryKey(MetaClass cm) {
-		if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()>1) {
-			createPkClass(cm);
-		}else if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()==1){
-			log.info("class name {} " , cm.getClassName());
-		}else { 
-			throw new RuntimeException("fuck fuck fuck");
+		if (cm.getMetaRelationsClasses().size()>0) {
+			
+		}else {
+			if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()>1) {
+				createPkClass(cm);
+			}else if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()==1){
+				log.info("class name {} " , cm.getClassName());
+			}else { 
+				throw new RuntimeException("fuck fuck fuck");
+			}
 		}
 	}
 
