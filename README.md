@@ -146,3 +146,12 @@ that is the "thing" the smallest of the righteous...
 https://www.youtube.com/watch?v=5ZH2it92ZmA
 
 what the programmer need is a machine that represents a machine...
+
+being honest its also have to right to say.. 
+
+if not worked.. fuck your self ... i fuck mine.. 
+
+https://www.youtube.com/watch?v=9ZDAYg196x8
+
+even the worst shit responds.. :-)
+
