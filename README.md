@@ -192,3 +192,19 @@ https://www.youtube.com/watch?v=JDG2m5hN1vo&list=RDGMEMJQXQAmqrnmK1SEjY_rKBGA&st
 all the math artifact to work in proof not in the theory.. was given..
 
 materialize an entity.. is "something really serious"...
+
+remembering both now.. "jezz"... 
+
+they studied to leave a message for the clan... 
+
+quite primitive indeed... :-) 
+
+one software engineering "impedance mimatch means"
+
+at each part that i bring your worl to my world... 
+
+"i create a possible origin of problem".
+
+https://www.youtube.com/watch?v=fzHui4ybChU
+
+few conventions ... and a lot of "sort of geniality"
