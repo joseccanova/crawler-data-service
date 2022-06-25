@@ -131,10 +131,6 @@ implements MutatorSupport<T>{
 		.keySet()
 		.parallelStream()
 		.forEach(e -> processRelations(theGraph, entityClassConfig.get(e)));
-		
-//		theGraph.vertexSet()
-//		.parallelStream()
-//		.forEach(v -> processRelations(theGraph , v));
 		log.info("end processing relations ");
 	}
 

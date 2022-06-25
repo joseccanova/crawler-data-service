@@ -160,3 +160,14 @@ its like when i ask ... you dont "all the mathemathics" behing ORM?
 do you think that "is a matter of hibernate"?
 
 all that new math that appears every day...
+
+how high.. https://www.youtube.com/watch?v=45cYwDMibGo
+
+"Ah ok... you've learn ... the core math.. hum?"... 
+
+"im against this mathematical formulation called ORM"... ;-)
+
+more one subtraction lover.. 
+
+"it's a luxury after all Oracle have bought or prepared all right"
+
