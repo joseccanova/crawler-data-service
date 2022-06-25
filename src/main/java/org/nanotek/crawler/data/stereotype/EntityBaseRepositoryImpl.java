@@ -3,12 +3,12 @@ package org.nanotek.crawler.data.stereotype;
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.Metamodel;
 
-import org.nanotek.crawler.BaseEntity;
 import org.springframework.data.jpa.provider.PersistenceProvider;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.JpaMetamodelEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 
+@SuppressWarnings({"rawtypes","unchecked"})
 public class EntityBaseRepositoryImpl extends SimpleJpaRepository {
 
 	private EntityBaseRepository repository;
