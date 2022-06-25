@@ -40,3 +40,17 @@ Mr Woods... https://www.youtube.com/watch?v=K5DoQnZA0oI
             *"artistalias.id":  70*
         *}*
     }*
+    
+    this query is funny 
+    
+     {
+        "inputClass1": "org.nanotek.entity.mb.Artist",
+        "inputClass2": "org.nanotek.entity.mb.ArtistAlias",
+        "parameters" :{
+            "artist.id":   23
+        }
+    }
+    
+    bugs bugs bugs
+    
+    *[https://youtu.be/6CwIB6pQoPo?t=1601]*
