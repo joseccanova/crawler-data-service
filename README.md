@@ -115,3 +115,6 @@ https://www.youtube.com/watch?v=lItwOrAoOKU&list=RDMM&start_radio=1&rv=5rtDd9z3w
 
 Being honest does not have a price.. and your dues does not judge you... 
 just say. you have dues..
+and if you walk "with a lot a sins".. and they dont stop to grow.. 
+
+you are blessed. 
