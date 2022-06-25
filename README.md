@@ -246,4 +246,4 @@ a memory... something that to gain some meaning.. will be thrown to the 0´s and
 
 being realistic... must use the "class" metamodel... os persistence jpa.
 
-by the end the name strategy that is used on the columns to generate the schema is wrong. 
+by the end the name strategy that is used on the columns to generate the schema is wrong. (for the legacy keys.)
