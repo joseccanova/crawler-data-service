@@ -171,3 +171,9 @@ more one subtraction lover..
 
 "it's a luxury after all Oracle have bought or prepared all right"
 
+heart barracuda is family...
+
+what we call "impedance mismatch" that sounds very grave... they 
+call a luxury of java programmers... 
+
+just more one stupid bitch that dont know the gravity of immutability... bitch..
