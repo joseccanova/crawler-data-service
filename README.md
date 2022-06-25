@@ -177,3 +177,11 @@ what we call "impedance mismatch" that sounds very grave... they
 call a luxury of java programmers... 
 
 just more one stupid bitch that dont know the gravity of immutability... bitch..
+
+and solve this problem is great... in matter of fact "BIG"... 
+
+https://www.youtube.com/watch?v=JDG2m5hN1vo&list=RDGMEMJQXQAmqrnmK1SEjY_rKBGA&start_radio=1&rv=PeMvMNpvB5M
+
+all the math artifact to work in proof not in the theory.. was given..
+
+materialize an entity.. is "something really serious"...
