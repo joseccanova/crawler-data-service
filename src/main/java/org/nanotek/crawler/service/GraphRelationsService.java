@@ -13,23 +13,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.beanutils.ConvertUtils;
-import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.beanutils.WrapDynaBean;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
-import org.nanotek.beans.EntityBeanInfo;
-import org.nanotek.beans.PropertyDescriptor;
-import org.nanotek.beans.sun.introspect.PropertyInfo;
 import org.nanotek.crawler.Base;
 import org.nanotek.crawler.data.SearchParameters;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
 import org.nanotek.crawler.data.config.meta.TempClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
+import org.nanotek.crawler.data.util.InstancePopulator;
 import org.nanotek.crawler.data.util.MutatorSupport;
+import org.nanotek.crawler.data.util.PayloadFilter;
 import org.nanotek.crawler.data.util.db.InstancePostProcessor;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
 import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
@@ -422,26 +419,14 @@ implements MutatorSupport<T>{
 				}).orElse(payload);
 	}
 	
+	@Autowired
+	protected PayloadFilter  payloadFilter;
+	
 	private Map<String, Object> filterPayload(Map<String, Object> payload) {
-		return payload.entrySet().stream()
-				.filter(e -> e.getKey()!=null && !e.getKey().isEmpty() && e.getValue() !=null)
-				.filter(e -> e.getKey().equals("inputClass1") 	|| 
-				e.getKey().equals("inputClass2") ||
-				e.getKey().equals("visited")
-				|| e.getKey().equals("graph")
-				|| e.getKey().equals("path")
-				|| e.getKey().split("instance[0-9]+").length>1
-				|| e.getKey().equals("node")
-				|| e.getKey().equals("nextStep")
-				|| e.getKey().equals("parameters")
-				|| isDotNotation(e.getKey()))
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		return payloadFilter.apply(payload);
 	}
 
-	private boolean isDotNotation(String key) {
-		return key.contains(".") && key.split("[.]").length == 2;
-	}
-
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private <T> void populateInstanceToPayload(T pojo, Map paylod) {
 		Pattern exclusionPattern = Pattern.compile("[$]");
@@ -456,7 +441,6 @@ implements MutatorSupport<T>{
 		});
 		
 	}
-	
 	
 	public List<T> prepareRepository(T instance , Map<String,Object> payload){
 		ExampleMatcher matcher = ExampleMatcher.matchingAll().withStringMatcher(StringMatcher.CONTAINING). withIgnoreCase().withIgnoreNullValues();
@@ -473,125 +457,12 @@ implements MutatorSupport<T>{
 		}
 	}
 	
+	@Autowired 
+	@Lazy(true)
+	InstancePopulator<T> instancePopulator;
 	
-	@SuppressWarnings("unchecked")
 	private  T populateInstance(T instance, Map<String, Object> payload) {
-		
-		
-		PropertyUtilsBean util = new PropertyUtilsBean();
-		Map<String,Object> parameters = Map.class.cast(payload.get("parameters"));
-		payload.putAll(parameters);
-		payload.entrySet()
-		.stream()
-		.forEach(e ->{
-			try {
-				String[] vvs = Optional.ofNullable(e).filter(e1 -> isNested(e1.getKey())).map(e1 -> e1.getKey().split("[.]")).orElse(new String[0]);//e.getKey().split("[.]");
-				if (vvs.length==2) {
-					Boolean myResult =  ( isClass(vvs[0], instance) || isClassProperty(vvs , instance) || hasProperty(vvs , instance));
-					if (myResult) {
-						String property = isClass(vvs[0], instance)  ?  getClassProperty(vvs , instance) : getProperty(vvs);
-						if ( isClassProperty(vvs , instance))
-							property =  vvs[1].substring(instance.getClass().getSimpleName().length()); 
-											try {
-												PropertyInfo pd = getMethod(property , instance);
-												if(pd !=null) {
-													Object result = ConvertUtils.convert(e.getValue(),pd.getPropertyType());
-													if(result !=null) {
-														log.info("SETTING PROPERTY FOR BEAN {} {} " , instance , result);
-														pd.getWriteMethod().invoke(instance, result);
-														log.info(" BEAN AFTER METHOD INVOKE {} " , instance );
-													}
-												}
-											}catch(Exception ex){
-												log.info("error {}" , ex);
-											}
-									}
-						
-				}
-			} catch ( Exception e1) {
-				log.info("error {}" , e1);
-			}
-		});
-		
-		return instance;
-	}
-	
-	private String getClassProperty(String[] vvs, T instance) {
-		String property = vvs[1];
-		EntityBeanInfo beanInfo = new EntityBeanInfo(instance.getClass());
-		return beanInfo.getProperties()
-		.entrySet()
-		.stream()
-		.filter(e -> e.getKey().equalsIgnoreCase(property))
-		.map(e -> e.getKey()).findFirst().orElse(null);
-	}
-
-	private boolean isClassProperty(String[] vvs, T instance) {
-		if (vvs[1].toLowerCase().contains(instance.getClass().getSimpleName().toLowerCase()+"id"))
-			return true;
-		return false;
-	}
-
-	private PropertyInfo getMethod(String key, T instance) {
-		EntityBeanInfo beanInfo = new EntityBeanInfo(instance.getClass());
-		return beanInfo.getProperties()
-		.entrySet()
-		.stream()
-		.filter(e -> e.getKey().equalsIgnoreCase(key))
-		.map(e -> e.getValue()).findFirst().orElse(null);
-	}
-
-	private PropertyDescriptor newPropertyDescriptor(String name, T instance) {
-		 try {
-			 	return new PropertyDescriptor(name , instance.getClass());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new  RuntimeException(e);
-		}
-	}
-
-	private boolean isNested(String key) {
-		return key.contains(".");
-	}
-
-	private String getProperty(String[] vvs) {
-		String idPart = vvs[1].substring(0,1).toUpperCase().concat(vvs[1].substring(1));
-		String classPart = vvs[0].toLowerCase();
-		return classPart + idPart;
-	}
-
-	private boolean hasProperty(String[] vvs, T instance) {
-		String property = getProperty(vvs);
-		return Arrays.asList(instance.getClass().getDeclaredFields())
-		.stream()
-		.filter(f -> f.getName().equalsIgnoreCase(property))
-		.count()>0;
-	}
-
-	private boolean isClass(String string, T instance) {
-		return instance.getClass().getSimpleName().toLowerCase().equals(string);
-	}
-
-	private boolean isField(T instance, String key) {
-		return Optional.ofNullable(key)
-		.map(k -> {
-			return checkField(instance , k);
-		}).orElse(false);
-	}
-
-	private boolean checkField(T instance, String k) {
-		String prov = k.replaceAll("[.]", "");
-		if (hasField(instance , prov)) {
-			return true;
-		}
-		return false;
-	}
-
-	private boolean hasField(T instance, String prov) {
-		return Arrays.asList(instance.getClass().getDeclaredFields())
-		.stream()
-		.filter(f -> f.getName().toLowerCase().contains(prov.toLowerCase()))
-		.count() > 0;
+		return instancePopulator.populate(instance, payload);
 	}
 
 	private Optional<?> getNextPath(Object m , GraphPath<Class<?>, MetaEdge> g1, Optional<Class<?>> clazzz) {

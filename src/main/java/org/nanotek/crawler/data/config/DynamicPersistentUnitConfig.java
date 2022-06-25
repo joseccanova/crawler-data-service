@@ -20,6 +20,8 @@ import javax.sql.DataSource;
 import org.hibernate.cfg.Environment;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepositoryImpl;
+import org.nanotek.crawler.data.util.InstancePopulator;
+import org.nanotek.crawler.data.util.PayloadFilter;
 import org.nanotek.crawler.data.util.db.ControllerClassConfig;
 import org.nanotek.crawler.data.util.db.JdbcHelper;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
@@ -72,6 +74,18 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 	@Qualifier(value="classCache")
 	public Map<Class<?>,String> classCache(){
 		return new HashMap<>();
+	}
+	
+	@Bean
+	@Primary
+	public <T> InstancePopulator<T> instancePopulator(){
+		return new InstancePopulator<T>();
+	}
+	
+	@Bean
+	@Primary
+	public PayloadFilter  payloadFilter() {
+		return new PayloadFilter();
 	}
 	
 	@Bean
