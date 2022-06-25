@@ -118,3 +118,8 @@ just say. you have dues..
 and if you walk "with a lot a sins".. and they dont stop to grow.. 
 
 you are blessed. 
+
+friends and after all 
+
+https://www.youtube.com/watch?v=Wkvd7pbfM78
+
