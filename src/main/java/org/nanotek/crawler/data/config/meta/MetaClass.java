@@ -32,9 +32,12 @@ public class MetaClass implements IClass {
 
 	@JsonIgnore
 	protected MetaIdentidy identity;
+
+	private List<Table> referencedTables;
 	
 	public MetaClass() {
 		super();
+		this.referencedTables=new ArrayList<>();
 		metaRelationsClasses = new ArrayList<> ();
 	}
 
@@ -44,6 +47,7 @@ public class MetaClass implements IClass {
 		this.tableName = tableName;
 		this.className = className;
 		this.metaAttributes = metaAttributes;
+		this.referencedTables=new ArrayList<>();
 	}
 
 	
@@ -54,6 +58,7 @@ public class MetaClass implements IClass {
 		this.tableName = tableName;
 		this.className = className;
 		this.table = table;
+		this.referencedTables=new ArrayList<>();
 	}
 
 	@Override
@@ -132,5 +137,13 @@ public class MetaClass implements IClass {
 
 	public void setMetaRelationsClasses(List<MetaRelationClass> metaRelationsClasses) {
 		this.metaRelationsClasses = metaRelationsClasses;
+	}
+
+	public void addReferencedTable(Table referencedTable) {
+		this.referencedTables.add(referencedTable);
+	}
+
+	public List<Table> getReferencedTables() {
+		return referencedTables;
 	}
 }

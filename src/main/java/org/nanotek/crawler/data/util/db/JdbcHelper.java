@@ -485,6 +485,7 @@ public class JdbcHelper {
 			}
 			md.setColumnName(c.getName());
 			md.setFieldName(processNameTranslationStrategy(c.getName()));
+			checkAttributeIsFk(md,meta);
 			Optional
 				.ofNullable(c.getSize())
 				.ifPresent(v -> md.setLength(String.valueOf(v)));
@@ -498,6 +499,22 @@ public class JdbcHelper {
 		return  Optional.of(meta);	
 	}
 	
+	private void checkAttributeIsFk(MetaDataAttribute md, MetaClass meta) {
+		meta.getMetaRelationsClasses()
+		.stream()
+		.forEach(c -> {
+			if(c.getPrimaryKeyTable().equals(meta.getTable())) {
+				c.getColumns()
+				.stream()
+				.forEach(cc ->{
+					if (cc.getName().equalsIgnoreCase(md.getColumnName())) {
+						meta.addReferencedTable(c.getReferencedTable());
+					}
+				});
+			}
+		});
+	}
+
 	private void processForeignKey(ForeignKey f, MetaClass meta) {
 		MetaRelationClass mrc = new MetaRelationClass(f);
 		meta.addMetaRelationClass(mrc);
