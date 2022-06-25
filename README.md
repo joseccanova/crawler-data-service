@@ -199,12 +199,35 @@ they studied to leave a message for the clan...
 
 quite primitive indeed... :-) 
 
-one software engineering "impedance mimatch means"
+one software engineering "impedance mismatch means"
 
-at each part that i bring your worl to my world... 
+at each part that i bring your world to my world... 
 
 "i create a possible origin of problem".
 
 https://www.youtube.com/watch?v=fzHui4ybChU
 
 few conventions ... and a lot of "sort of geniality"
+
+can be the impossible of the complicated.. 
+
+but need to walk under the premise.. 
+
+the best of the smallest.. 
+
+your hands will be on the plate.
+
+i few so sorry more one fucking that is a totally ignorant behind the math of ORM... 
+
+he thinks that we are "hibernaters..." and not a kind of stuff trying to minimize a problem. the why https://www.youtube.com/watch?v=H6F2753tpLQ
+
+listening this..i know who started the fight.. us like usual.. look the phrase.. 
+
+lool my friend you hero ...its like a good .. but thruth has a logic... 
+
+ there is no "thruth 2.0" and we know that . 
+ 
+  https://www.youtube.com/watch?v=H6F2753tpLQ
+  
+  this is how the problems begins... 
+
