@@ -165,6 +165,13 @@ how high.. https://www.youtube.com/watch?v=45cYwDMibGo
 
 "Ah ok... you've learn ... the core math.. hum?"... 
 
+
+Im abstracting a little bit more... thing more than twice... .. but ... 
+
+the "impedance on practice is a little bit far because its the paradigm"
+
+if its solved for one..
+
 "im against this mathematical formulation called ORM"... ;-)
 
 more one subtraction lover.. 
