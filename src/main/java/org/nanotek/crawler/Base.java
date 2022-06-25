@@ -22,14 +22,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 @Valid
 public abstract class Base<K , ID> implements IBase<ID> {
 
-	
 	public static <K extends Base<? , ?>> K newType(Supplier<K> baseSupplier)
 	{ 
 		return baseSupplier.get();
 	}
 	
 	public Object getProperty(Field f, Base<K, ID> base) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-		return 		PropertyUtils.getProperty(base, f.getName());
+		return 	PropertyUtils.getProperty(base, f.getName());
 	}
 	
 	@JsonIgnore

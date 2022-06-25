@@ -19,7 +19,7 @@ public interface PayloadFilter {
 
 	default boolean hasCriteria(Entry<String, Object> e) {
 		boolean hasEditor = PropertyEditorManager.findEditor(e.getValue().getClass()) !=null;
-		Pattern pattern = Pattern.compile("^id|^cd|^nm|^nr|^login|^numid|^cod" , Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile("^id|id$|^cd|^nm|^nr|^login|^numid|^cod" , Pattern.CASE_INSENSITIVE);
 		boolean isId = pattern.matcher(e.getKey()).find();
 		return hasEditor && isId;
 	};

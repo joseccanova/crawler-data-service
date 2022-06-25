@@ -104,7 +104,7 @@ public class JdbcHelper {
 					Pattern pattern = Pattern.compile("^([A-Z]+),");
 					Matcher matcher = pattern.matcher(name);
 					while (matcher.find()) {
-						System.out.println("matcher");
+						log.info("matcher {}" , matcher.pattern().pattern());
 						int pos = matcher.start();
 						String res = str1.substring(pos, pos+1);
 						String str2 =  name.replaceFirst("[A-Z]", res);
