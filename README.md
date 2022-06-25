@@ -123,3 +123,22 @@ friends and after all
 
 https://www.youtube.com/watch?v=Wkvd7pbfM78
 
+the practice... one thing very very very important.. 
+
+https://www.youtube.com/watch?v=1xdS-9zOUZQ
+
+need to a "sunner" to understand this..
+
+the "language" is not important ...i agree... 
+
+important is the practice.. practice always point to the future.
+
+https://www.youtube.com/watch?v=1xdS-9zOUZQ
+
+JVM is a "problem solved"
+
+dont came being a burglar reinventing the wheel.. 
+
+the principle of computing is "the right thing will born from inside.. dont worry"
+
+that is the "thing" the smallest of the rightest... 
