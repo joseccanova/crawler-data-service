@@ -62,3 +62,5 @@ Mr Woods... https://www.youtube.com/watch?v=K5DoQnZA0oI
 *joga joga... 	https://www.youtube.com/watch?v=pRpeEdMmmQ0&list=RDGMEMQ1dJ7wXfLlqCjwV0xfSNbA&index=2*
 *well its fun... https://www.youtube.com/watch?v=booKP974B0k besides be a medic.. best thing in the world... *
 *cognac is life... with rum and gym.. https://www.youtube.com/watch?v=yRh-dzrI4Z4*
+
+its not a "small algorithm" solving a problem.. its all in the "possible small  space".. a solution is a solution... 
