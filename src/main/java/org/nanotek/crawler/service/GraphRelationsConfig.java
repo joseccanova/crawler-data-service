@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 
 //TODO: Remodel this class to construct a graph based on MetaClassVertex's and MetaEdge's
 
-
+@SuppressWarnings({ "rawtypes", "unchecked" })
 @Slf4j
 @SpringBootConfiguration
 @EnableScheduling
@@ -164,7 +164,6 @@ implements MutatorSupport<T>{
 			log.info("vertex1 added {}" , v1 );
 			theGraph.addVertex(v1);
 		}
-		AtomicInteger idx = new AtomicInteger();
 		if (!v.equals(v1))
 			Arrays.asList(v.getDeclaredFields()).parallelStream()
 			.filter(f -> f.getAnnotation(javax.persistence.Id.class) !=null)
@@ -265,7 +264,6 @@ implements MutatorSupport<T>{
 		}
 		return entityGraph;
 	}
-	@SuppressWarnings({ "unchecked", "unused" })
 	private Optional<Class<T>> createClass(String classStr){
 		try {
 			return  Optional.ofNullable( (Class<T>) beanFactory.getBeanClassLoader().loadClass(classStr));
@@ -284,7 +282,6 @@ implements MutatorSupport<T>{
 				.get();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Bean
 	IntegrationFlow createOutputIntegrationFlow(){
 		return IntegrationFlows.from(outputChannel())
@@ -296,7 +293,6 @@ implements MutatorSupport<T>{
 				.get();
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Bean
 	IntegrationFlow nillChannelFlow(){
 		return IntegrationFlows.from(nillChannel())
@@ -320,7 +316,6 @@ implements MutatorSupport<T>{
 		return msg1;		
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void processNextStep(Map payload, GraphPath<Class<?>, MetaEdge> g1, Object c) {
 		payload.put("inputClass1", Class.class.cast(c).getName());
 		payload.put("nextStep", c);
@@ -370,7 +365,6 @@ implements MutatorSupport<T>{
 
 	}
 	
-	@SuppressWarnings("unchecked")
 	private   Object processaClassePayload(Object m , String classStr) {
 		try {
 			Class<T> clazzCls= Class.class.cast(beanFactory.getBeanClassLoader().loadClass(classStr));
@@ -427,8 +421,7 @@ implements MutatorSupport<T>{
 	}
 
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <T> void populateInstanceToPayload(T pojo, Map payload) {
+	private <P> void populateInstanceToPayload(P pojo, Map payload) {
 		Pattern exclusionPattern = Pattern.compile("[$]");
 		WrapDynaBean bean = new WrapDynaBean(pojo);
 		Arrays.asList(pojo.getClass().getDeclaredFields())
