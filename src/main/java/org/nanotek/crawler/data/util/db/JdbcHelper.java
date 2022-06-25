@@ -70,6 +70,7 @@ import schemacrawler.schemacrawler.SchemaInfoLevelBuilder;
 import schemacrawler.tools.utility.SchemaCrawlerUtility;
 
 @Slf4j
+@SuppressWarnings({"rawtypes"})
 public class JdbcHelper {
 	
 	public static final String PACKAGE =  "org.nanotek.entity.mb.";  ;
@@ -266,6 +267,7 @@ public class JdbcHelper {
 			String fieldNAme = prepareAttributeNameName(m.getFieldName());
 			name="\""+name+"\"";	
 			log.info("field Name {}" , fieldNAme);
+			AnnotationDescription[] validationAnnotations =  buildAnnotations(m);
 			AnnotationDescription columnAnnotation =  AnnotationDescription.Builder.ofType(Column.class)
 					.define("name", name)
 					.build();
@@ -275,9 +277,9 @@ public class JdbcHelper {
 			try {
 				Builder bd1  = h.get().orElseThrow();
 				if (m !=null && m.isId()) {
-					bd1 = processIdProperty(bd1 , m , fieldNAme , ca , columnAnnotation ,  m.getMetaClass());
+					bd1 = processIdProperty(bd1 , m , fieldNAme , ca , columnAnnotation ,validationAnnotations,  m.getMetaClass());
 				}else {
-					bd1=bd1.defineProperty(fieldNAme.trim(), ca).annotateField(checkAditionalAnnotatoins(ca , columnAnnotation));
+					bd1=bd1.defineProperty(fieldNAme.trim(), ca).annotateField(checkAditionalAnnotations(ca , columnAnnotation));
 				}
 				h.put(bd1);
 			}catch (Exception e) {
@@ -291,7 +293,7 @@ public class JdbcHelper {
 		log.info("the holder value ");
 	}
 
-	private AnnotationDescription[] checkAditionalAnnotatoins(Class<?> ca, AnnotationDescription columnAnnotation) {
+	private AnnotationDescription[] checkAditionalAnnotations(Class<?> ca, AnnotationDescription columnAnnotation) {
 		AnnotationDescription[] descs ; 
 		if (UUID.class.equals(ca)) {
 			AnnotationDescription typed = AnnotationDescription.Builder.ofType(Type.class).define("type", "org.hibernate.type.PostgresUUIDType").build();
@@ -306,7 +308,7 @@ public class JdbcHelper {
 	ObjectMapper mapper;
 	
 	private Builder processIdProperty(Builder bd1, MetaDataAttribute m , 
-				String fieldNAme, Class<?> ca, AnnotationDescription columnAnnotation, MetaClass mc) {
+				String fieldNAme, Class<?> ca, AnnotationDescription columnAnnotation, AnnotationDescription[] validationAnnotations, MetaClass mc) {
 		String fieldname = prepareAttributeNameName(m.getFieldName());
 		System.err.println("PROCESSING ID FOR CLASS " + mc.getClassName().toUpperCase());
 		System.err.println("-------------------- clsss " + mc.getClassName().toUpperCase() + "------------id " + fieldname);
@@ -319,7 +321,7 @@ public class JdbcHelper {
 			e.printStackTrace();
 		}
 		log.info("property ID :{}" , fieldname.trim());
-		return bd1.defineProperty(fieldname.trim(), ca).annotateField(columnAnnotation).annotateField(processIdAnnotations());
+		return bd1.defineProperty(fieldname.trim(), ca).annotateField(columnAnnotation).annotateField(processIdAnnotations()).annotateField(validationAnnotations);
 	}
 
 	private AnnotationDescription[] processIdAnnotations() {
@@ -345,7 +347,6 @@ public class JdbcHelper {
 		
 		Class<?> idClass = getIdClass(cm11);
 		
-		BuddyBase bb = new BuddyBase();  
 		TypeDefinition td = TypeDescription.Generic.Builder.parameterizedType(Base.class  , Base.class.asSubclass(BaseEntity.class) , idClass).build();
 		Builder bd = new ByteBuddy(ClassFileVersion.JAVA_V8)
 				.subclass(td)
@@ -373,7 +374,7 @@ public class JdbcHelper {
 	}
 
 
-	private AnnotationDescription[] buildAnnotations(MetaDataAttribute m) {
+	public AnnotationDescription[] buildAnnotations(MetaDataAttribute m) {
 		List<AnnotationDescription> list = new ArrayList<>();
 		Optional.ofNullable(m)
 										.filter(t ->t.isRequired())

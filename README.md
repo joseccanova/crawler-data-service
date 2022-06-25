@@ -31,3 +31,12 @@ Egg First.. https://www.youtube.com/watch?v=r2GEb4MrkvU&list=RDGMEMHDXYb1_DDSgDs
 -------------------------
 ###Maybe could help on this topic... 
 https://martinfowler.com/data/
+
+Mr Woods... https://www.youtube.com/watch?v=K5DoQnZA0oI
+*{*
+        *"inputClass1": "org.nanotek.entity.mb.ArtistAlias",*
+        *"inputClass2": "org.nanotek.entity.mb.Area",*
+        *"parameters" :{*
+            *"artistalias.id":  70*
+        *}*
+    }*

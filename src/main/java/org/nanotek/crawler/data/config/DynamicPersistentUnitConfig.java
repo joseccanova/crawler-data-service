@@ -100,7 +100,7 @@ public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 	@ConfigurationProperties(prefix = "spring.datasource")
 	public DataSourceProperties defaultDataSourceProperties() {
 		DataSourceProperties dsp = new DataSourceProperties();
-		dsp.setName("portal-data-source-source");
+		dsp.setName("portal-data-source");
 		return dsp;
 	}
 
