@@ -53,4 +53,7 @@ Mr Woods... https://www.youtube.com/watch?v=K5DoQnZA0oI
     
     bugs bugs bugs
     
-    *[https://youtu.be/6CwIB6pQoPo?t=1601]*
+    *(https://youtu.be/6CwIB6pQoPo?t=1601)*
+    
+*(https://www.youtube.com/watch?v=arZZw8NyPq8&list=RDMM&index=2)*
+*https://www.youtube.com/watch?v=-ScjucUV8v0*
