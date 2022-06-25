@@ -237,3 +237,11 @@ fix taxonomies... literaly.. otherwise you drop in the euclid´s problem.
 the best for the smallest... 
 
 the COOD object Paradigm after all "object are mutations"... and records need a timespamp..there is no record without time.
+
+lets think about ... "immutable"... with relation of what?
+]
+if you are immutable... that best that i call you ... something close of noting.. https://youtu.be/ORnvO1VyYMk
+
+a memory... something that to gain some meaning.. will be thrown to the 0´s and 1´s but with a time at side.. 
+
+so immutability is a rule a thumb when you need to define "something (the impedance borning)"... because something is complex...
