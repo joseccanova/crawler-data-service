@@ -335,7 +335,7 @@ implements MutatorSupport<T>{
 		getNextPath(m , g1 , Optional.of(clazz1)).ifPresentOrElse(c -> {
 			addVisited(clazz1 , msg1); 
 			processNextStep(Map.class.cast(msg1) , g1 , c);
-		}, () -> { orElse.put("inputClass1", Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , clazz2);});
+		}, () -> { orElse.put("inputClass1", Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , orElse);});
 		return msg1;		
 	}
 	
