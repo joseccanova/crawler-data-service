@@ -256,12 +256,16 @@ that object serialize it's properties also like class+property.
 
 https://www.youtube.com/watch?v=iZndVv-jl-U
 
-Postman is great but need a client focused on component premises, this when we understant why we have "html applications"
+Postman is great but need a client focused on component premises, this when we understand why we have "html applications"
 
-Filtering the payload is working (some parts) not working yet the PK and FK scan (will help a little). But class generation is at a acceptable level which means is generating and loading.
+Filtering the payload is working (some parts) not working yet the PK and FK scan (will help a little). But class generation is at an acceptable level which means is generating and loading.
 
 im now really missing all that code produced 2+ years over angular... the component had a lot of good things.. that now i am obligate to rewrite and this is annoying me a lot.
 
 https://www.youtube.com/watch?v=aXpKtZbHhQI&list=RDJDG2m5hN1vo&index=21
 
 lets do it..
+
+heheehe thinking on this the laugh is perfect https://youtu.be/HQmmM_qwG4k?t=0
+
+don't you believe on artificial intelligence?
