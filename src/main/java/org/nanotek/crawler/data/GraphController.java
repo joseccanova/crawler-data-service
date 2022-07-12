@@ -3,6 +3,8 @@ package org.nanotek.crawler.data;
 import java.util.Map;
 
 import org.jgrapht.Graph;
+import org.nanotek.crawler.data.config.meta.MetaEdge;
+import org.nanotek.crawler.data.config.meta.TempClass;
 import org.nanotek.crawler.service.GraphRelationsConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,6 +14,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +50,20 @@ public class GraphController {
 	@GetMapping(path="/repositories")
 	public ResponseEntity<?> getPath(){
 		return ResponseEntity.ok(relationService.getRepositories());
+	}
+	
+	@PostMapping(path="/add_invalid_edge")
+	public ResponseEntity<?> addInvalidEdge(@RequestBody JsonNode node){
+		TempClass tempClass = objectMapper.convertValue(node, TempClass.class);
+		String cls1 = tempClass.getSource();
+		String cls2 = tempClass.getTarget();
+		Class<?> cl = (Class<?>) relationService.getEntityClassConfig().get(cls1);
+		Class<?> c2 = (Class<?>) relationService.getEntityClassConfig().get(cls2);
+		MetaEdge me = new MetaEdge(cl, c2);
+		if(!relationService.getInvalidEdges().contains(me)) {
+			relationService.getInvalidEdges().add(me);
+		}
+		return ResponseEntity.ok(me);
 	}
 	
 	@Autowired

@@ -75,7 +75,12 @@ implements MutatorSupport<T>{
 	
 	List<InstancePostProcessor<T>> instancePostProcessors = new ArrayList<>();
 	
-
+	List<MetaEdge> invalidEdges = new ArrayList<>();
+	
+	public  List<MetaEdge> getInvalidEdges() {
+		return invalidEdges;
+	}
+	
 	private Graph<Class<?>, MetaEdge> entityGraph;
 
 	@Autowired
@@ -83,11 +88,12 @@ implements MutatorSupport<T>{
 	
 	public Map<?,?> getEntityClassConfig(){
 		return entityClassConfig.keySet()
-		.stream()
+		.parallelStream()
 		.map(e -> Map.entry(e, entityClassConfig.get(e)) ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 	
 	public GraphRelationsConfig() {
+		super();
 	}
 
 	public Graph<Class<?> , MetaEdge>   mountRelationGraph() {

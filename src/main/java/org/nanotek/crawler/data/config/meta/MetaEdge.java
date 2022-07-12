@@ -32,24 +32,21 @@ public class MetaEdge extends DefaultEdge  {
 	public MetaEdge() {}
 	
 	public MetaEdge(Class<?> source , Class<?> target) {
-		Arrays.asList(MetaEdge.class.getClasses())
-		.stream()
-		.forEach(c -> {
+		Class<?> c = MetaEdge.class.getSuperclass().getSuperclass();
+		log.info("className{}" , c);
+		for (Field f1 : c.getDeclaredFields()) {
 			try {
-					if (c.getField("source") !=null){
-						Field f = c.getField("source");
-						f.setAccessible(true);
-						f.set(this, source);
+					if (f1.getName().equals("source")){
+						f1.setAccessible(true);
+						f1.set(this, source);
 					}
-					if (c.getField("target") !=null){
-						Field f = c.getField("target");
-						f.setAccessible(true);
-						f.set(this, target);
-						
+					if (f1.getName().equals("target")){
+						f1.setAccessible(true);
+						f1.set(this, target);
 					}
 				} catch (Exception e) {
 				}
-		});
+		}
 	}
 	
 	@Override
