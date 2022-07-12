@@ -13,8 +13,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -37,15 +39,13 @@ import org.nanotek.crawler.data.config.meta.IClass;
 import org.nanotek.crawler.data.config.meta.IDataAttribute;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
-import org.nanotek.crawler.data.config.meta.MetaIdentidy;
+import org.nanotek.crawler.data.config.meta.MetaIdentity;
 import org.nanotek.crawler.data.config.meta.MetaRelationClass;
-import org.nanotek.crawler.data.util.buddy.BuddyBase;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,10 +59,8 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType.Builder;
 import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import net.bytebuddy.implementation.FixedValue;
-import schemacrawler.inclusionrule.RegularExpressionInclusionRule;
 import schemacrawler.schema.Catalog;
 import schemacrawler.schema.ForeignKey;
-import schemacrawler.schemacrawler.LimitOptionsBuilder;
 import schemacrawler.schemacrawler.LoadOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaCrawlerOptions;
 import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
@@ -172,13 +170,22 @@ public class JdbcHelper {
 		String myClassName = cm.getClassName();
 		String myClassName1 = prepareName(myClassName);
 		log.info( "my class name {}:",  myClassName);
+		cm
+			.getMetaAttributes()
+			.stream()
+			.collect(Collectors
+					.groupingBy(f -> processMetaAttributeIdentity(f)))
+					.entrySet().stream().filter(e -> verifyMatch1Size(e))
+					.forEach(att -> fixAttName(att.getValue()));
+					
 		Class<?> baseClass =  Optional.of(cm).filter(cm1 -> cm1.getMetaAttributes().stream().anyMatch(cm11 -> cm11.isId()))
 				.map(cm11 ->{
 					List<MetaDataAttribute> metaAttributes = cm11.getMetaAttributes();
 					Builder bd = processClassMetaData (cm , classLoader);
 					Holder<Builder> h = new Holder<>();
 					h.put(bd);
-					fixPrimaryKey(cm);
+					fixPrimaryKeyClass(cm11);
+					fixAttributeNames(cm11);
 					metaAttributes
 					.stream()
 					.forEach(m -> {
@@ -186,7 +193,6 @@ public class JdbcHelper {
 						checkClass(m);
 						processMetaAttribute(m , h);
 					});
-					
 					 Class<?> c = createBuddyClass(h , myClassName1 , classLoader);
 					 return c;
 					}).orElse(null);
@@ -194,26 +200,48 @@ public class JdbcHelper {
 	}
 
 	
-	private void fixPrimaryKey(MetaClass cm) {
-		
-		Optional.ofNullable(cm.getIdentity())
-		.ifPresentOrElse(i->checkKeyAttributes(i , cm), ()->{
-			processByClassHeuristics(cm);
+	private void fixAttName(List<MetaDataAttribute> value) {
+		AtomicInteger i = new AtomicInteger();
+		value
+			.stream().forEach(v -> v.setFieldName(v.getFieldName()+i.addAndGet(1)));
+	}
+
+	private boolean verifyMatch1Size(Entry<Object, List<MetaDataAttribute>> e) {
+			log.info("theAttribute {}" , e.getKey()); 
+			return e.getValue().size()>1 ;
+	}
+
+	private Object processMetaAttributeIdentity(MetaDataAttribute f) {
+		return f.getFieldName();
+	}
+
+	private void fixAttributeNames(MetaClass cm11) {
+		cm11.getMetaAttributes()
+		.stream()
+		.forEach(att ->{
+			String newFieldname = att.getFieldName().replaceAll("package", "pkg").replaceAll("field", "fld").replaceAll("class", "clazz");
+			att.setFieldName(newFieldname);
 		});
 	}
 
-	private void processByClassHeuristics(MetaClass cm) {
-			if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()>1) {
-				createPkClass(cm);
-			}else if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()==1){
-				log.info("class name {} " , cm.getClassName());
-			}else { 
-				throw new RuntimeException("fuck fuck fuck");
+	private void fixPrimaryKeyClass(MetaClass body) {
+		if(body.getMetaAttributes()
+		.stream()
+		.filter(a -> a.isId())
+		.count()>1) { 
+			int i = 0;
+			for (MetaDataAttribute att : body.getMetaAttributes()) {
+				if (att.isId()) {
+					i++;
+					if (i > 1) {
+						att.setId(false);
+					}
+				}
 			}
-		return;
+		}
 	}
 
-	private void checkKeyAttributes(MetaIdentidy i, MetaClass cm) {
+	private void checkKeyAttributes(MetaIdentity i, MetaClass cm) {
 		i.getColumns()
 		.forEach(c -> {
 			cm.getMetaAttributes()
@@ -233,9 +261,10 @@ public class JdbcHelper {
 	private Optional<Boolean> equalsIgnoreCase(String columnName, String name) {
 		return Optional.ofNullable(columnName).map(cn -> cn.equalsIgnoreCase(name));
 	}
-
+	
+	//TODO: Think about.
 	private void createPkClass(MetaClass cm) {
-			log.info("class name {} " , cm.getClassName());
+			log.info(" createPkClass class name {} " , cm.getClassName());
 	}
 
 	private void checkClass(IDataAttribute m) {
@@ -255,16 +284,16 @@ public class JdbcHelper {
 		 Class<?> c = theBuilder.make().load(classLoader).getLoaded();
 		 Entity theEntity = c.getAnnotation(Entity.class);
 		 if (!isValidEntity(c)){ 
-			 System.err.println("IS NOT VALID ENTITY PK ---------------" + theEntity.name());
+			log.error("IS NOT VALID ENTITY PK ---------------" + theEntity.name());
 			throw new RuntimeException();
 		 }
 		 if (isMultiplePk(c)){ 
-			 System.err.println("IS NULL PK ---------------" + theEntity.name());
-				throw new RuntimeException();
-			 }
+			 log.error("IS MultiplePK PK ---------------" + theEntity.name());
+			throw new RuntimeException();
+		 }
 		 entityClassConfig.put(myClassName, c);
 		 entityClassConfig.getTypeCache().insert(classLoader, myClassName , c);
-		 System.err.println("Printing annotations for class " + theEntity.name());
+		 log.info("Printing annotations for class " + theEntity.name());
 		 if (entityClassConfig.getOrDefault(c.getName(), Base.class).equals(Base.class)) {
 			 entityClassConfig.put(c.getSimpleName(), c);
 		 }else {
@@ -294,9 +323,10 @@ public class JdbcHelper {
 	private void processMetaAttribute(MetaDataAttribute m , Holder<Builder> h) {
 		try {
 			String name = Optional.ofNullable( m.getColumnName() ).orElse(m.getColumnName());
-			String fieldNAme = prepareAttributeNameName(m.getFieldName());
+			String fName = prepareAttributeNameName(m.getFieldName());
 			name="\""+name+"\"";	
-			log.info("field Name {}" , fieldNAme);
+			String nFname = fName.replaceAll("package", "pkg").replaceAll("class", "clazz").replaceAll("field", "fld").replaceAll("import", "iprt");
+			log.info("field Name {}" , nFname);
 			AnnotationDescription[] validationAnnotations =  buildAnnotations(m);
 			AnnotationDescription columnAnnotation =  AnnotationDescription.Builder.ofType(Column.class)
 					.define("name", name)
@@ -307,9 +337,9 @@ public class JdbcHelper {
 			try {
 				Builder bd1  = h.get().orElseThrow();
 				if (m !=null && m.isId()) {
-					bd1 = processIdProperty(bd1 , m , fieldNAme , ca , columnAnnotation ,validationAnnotations,  m.getMetaClass());
+					bd1 = processIdProperty(bd1 , m , nFname , ca , columnAnnotation ,validationAnnotations,  m.getMetaClass());
 				}else {
-					bd1=bd1.defineProperty(fieldNAme.trim(), ca).annotateField(checkAditionalAnnotations(ca , columnAnnotation));
+					bd1=bd1.defineProperty(nFname.trim(), ca).annotateField(checkAditionalAnnotations(ca , columnAnnotation));
 				}
 				h.put(bd1);
 			}catch (Exception e) {
@@ -338,10 +368,10 @@ public class JdbcHelper {
 	ObjectMapper mapper;
 	
 	private Builder processIdProperty(Builder bd1, MetaDataAttribute m , 
-				String fieldNAme, Class<?> ca, AnnotationDescription columnAnnotation, AnnotationDescription[] validationAnnotations, MetaClass mc) {
-		String fieldname = prepareAttributeNameName(m.getFieldName());
-		System.err.println("PROCESSING ID FOR CLASS " + mc.getClassName().toUpperCase());
-		System.err.println("-------------------- clsss " + mc.getClassName().toUpperCase() + "------------id " + fieldname);
+				String nFname, Class<?> ca, AnnotationDescription columnAnnotation, AnnotationDescription[] validationAnnotations, MetaClass mc) {
+		String fieldname = nFname;
+		log.info("PROCESSING ID FOR CLASS " + mc.getClassName().toUpperCase());
+		log.info("-------------------- clsss " + mc.getClassName().toUpperCase() + "------------id " + fieldname);
 		try {
 			JsonNode ndoe =  mapper.convertValue(m, JsonNode.class);
 			StringWriter writer = new StringWriter();
@@ -379,17 +409,12 @@ public class JdbcHelper {
 		TypeDefinition td = TypeDescription.Generic.Builder.parameterizedType(Base.class  , Base.class.asSubclass(BaseEntity.class) , idClass).build();
 		Builder bd = new ByteBuddy(ClassFileVersion.JAVA_V8)
 				.subclass(td)
-//				.subclass(Base.class)
 				.name(PACKAGE+myClassName)
 				.annotateType(rootAnnotation)
-//				.annotateType(infoAnnotation)
 				.annotateType(new EntityImpl(myClassName))
 				.annotateType(new TableImpl(tableName))
 				.withHashCodeEquals()
 				.withToString()
-//				.defineProperty("metaClass", MetaClass.class)
-//				.annotateField(AnnotationDescription.Builder.ofType(Transient.class).build())
-//				.annotateField(AnnotationDescription.Builder.ofType(JsonIgnore.class).build())
 				.method(named("getMetaClass")).intercept(FixedValue.value(MetaClass.class.cast(cm11)));
 			return bd;
 	}
@@ -445,15 +470,6 @@ public class JdbcHelper {
 							.setRetrievePrimaryKeys(true)
 							.setRetrieveTableColumns(true)
 							.setRetrieveTables(true);
-		
-		final LimitOptionsBuilder limitOptionsBuilder =
-				LimitOptionsBuilder.builder()
-				.includeSchemas(new RegularExpressionInclusionRule("."));
-//				.includeRoutineParameters(new RegularExpressionExclusionRule("."))
-//				.includeSequences(new RegularExpressionExclusionRule("."))
-//				.includeRoutines(new RegularExpressionExclusionRule("."));
-//				.includeSynonyms(new RegularExpressionExclusionRule("^ACI_ACX_N_SSV$"));
-				
 				
 		final LoadOptionsBuilder loadOptionsBuilder =
 				LoadOptionsBuilder.builder()
@@ -472,6 +488,7 @@ public class JdbcHelper {
 				Collection<schemacrawler.schema.Table> tables = catalog.getTables();
 				
 				return tables.parallelStream()
+								.filter(t1 ->  t1.getColumns() !=null)
 								.filter(t1 -> t1.getColumns().size()>0)
 								.map(t -> processMetaClass(t))
 								.filter(m -> m.isPresent())
@@ -490,7 +507,7 @@ public class JdbcHelper {
 		String newName = processNameTranslationStrategy(t.getName());
 		meta.setClassName(newName);
 		meta.setTableName(t.getFullName());
-		MetaIdentidy mi = new MetaIdentidy(t.getPrimaryKey());
+		MetaIdentity mi = new MetaIdentity(t.getPrimaryKey());
 		meta.setIdentity(mi);
 		t.getColumns().stream()
 		.forEach(c ->{
@@ -550,6 +567,107 @@ public class JdbcHelper {
 
 	public String processNameTranslationStrategy(String name) {
 		String newName = name.replaceAll("GRP_", "GRUPO_");
+		newName  = newName .replaceAll("PRTAL$", "PORTAL");
+		newName  = newName .replaceAll("PRTAL_", "PORTAL_");
+		newName = newName .replaceAll("MENSG$", "MENSAGEM");
+		newName = newName .replaceAll("MENSG_", "MENSAGEM_");
+		newName = newName .replaceAll("USURO_", "USUARIO_");
+		newName = newName .replaceAll("SITUC", "SITUACAO");
+		newName = newName .replaceAll("ACEIT_", "ACEITE_");
+		newName = newName .replaceAll("RGIST", "REGISTRO");
+		newName = newName .replaceAll("ACSSO", "ACESSO");
+		newName = newName .replaceAll("PRMRO", "PRIMEIRO");
+		newName = newName .replaceAll("PESOA", "PESSOA");
+		newName = newName .replaceAll("ASSES_", "ASSESSORIA_");
+		newName = newName .replaceAll("ASSES$", "ASSESSORIA");
+		newName = newName .replaceAll("UNIDD", "UNIDADE");
+		newName = newName .replaceAll("NGOCO", "NEGOCIO");
+		newName = newName .replaceAll("CRTOR", "CORRETOR");
+		newName = newName .replaceAll("COMRL", "COMERCIAL");
+		newName = newName .replaceAll("ENDER$", "ENDERECO");
+		newName = newName .replaceAll("NAC$", "NACIONALIDADE");
+		newName = newName .replaceAll("ENDER_", "ENDERECO_");
+		newName = newName .replaceAll("TELEF_", "TELEFONE_");
+		newName = newName .replaceAll("HISTO_", "HISTORICO_");
+		newName = newName .replaceAll("ESTPL", "ESTIPULANTE");
+		newName = newName .replaceAll("SISTM", "SISTEMA");
+		newName = newName .replaceAll("FUCID", "FUCIONALIDADE");
+		newName = newName .replaceAll("PERFL", "PERFIL");
+		newName = newName .replaceAll("DIGTL", "DIGITAL");
+		newName = newName .replaceAll("MOTV", "MOTIVO");
+		newName = newName .replaceAll("ARQUV", "ARQUIVO");
+		newName = newName .replaceAll("SISTEM_", "SISTEMA");
+		newName = newName .replaceAll("OVDRIA", "OUVIDORIA");
+		newName = newName .replaceAll("PARAM$", "PARAMETRO");
+		newName = newName .replaceAll("PARAM_", "PARAMETRO_");
+		newName = newName .replaceAll("NAC_", "NACIONALIDADE_");
+		newName = newName .replaceAll("ACOMP$", "ACOMPANHAMENTO");
+		newName = newName .replaceAll("VRSAO", "VERSAO");
+		newName = newName .replaceAll("HISTO$", "HISTORICO");
+		newName = newName .replaceAll("PRTAL$", "PORTAL");
+		newName = newName .replaceAll("APLCC", "APOLICE");
+		newName = newName .replaceAll("FNCLD", "FUNCIONALIDADE");
+		newName = newName .replaceAll("ORIGM", "ORIGEM");
+		newName = newName .replaceAll("MBILE", "MOBILE");
+		newName = newName .replaceAll("PMCAO", "PROMOCAO");
+		newName = newName .replaceAll("PAGNA", "PAGINA");
+		newName = newName .replaceAll("CLBOR", "COLABORADOR");
+		newName = newName .replaceAll("CTRAT", "CONTRATO");
+		newName = newName .replaceAll("CATGO", "CATEGORIA");
+		newName = newName .replaceAll("EVVDA", "ENVOLVIDA");
+		newName = newName .replaceAll("TELEF_", "TELEFONE_");
+		newName = newName .replaceAll("TELEF$", "TELEFONE");
+		newName = newName .replaceAll("TMPLT", "TEMPLATE");
+		newName = newName .replaceAll("CIDAD$", "CIDADE");
+		newName = newName .replaceAll("CIDAD_", "CIDADE_");
+		newName = newName .replaceAll("BAIRR$", "BAIRRO");
+		newName = newName .replaceAll("BAIRR_", "BAIRRO_");
+		newName = newName .replaceAll("CMPLO", "COMPLEMENTO");
+		newName = newName .replaceAll("POSTL", "POSTAL");
+		newName = newName .replaceAll("SUCSL", "SUCURSAL");
+		newName = newName .replaceAll("GRENT", "GERENTE");
+		newName = newName .replaceAll("GERNC", "GERENCIA");
+		newName = newName .replaceAll("USURO", "USUARIO");
+		newName = newName .replaceAll("OFCNA", "OFICINA");
+		newName = newName .replaceAll("OFVSTRA", "OFICINA_VISTORIA");
+		newName = newName .replaceAll("CCUST", "CENTRO_CUSTO");
+		newName = newName .replaceAll("CADPAIS", "CADASTRO_PAIS");
+		newName = newName .replaceAll("CADESTA", "CADASTRO_ESTADO");
+		newName = newName .replaceAll("CADCID", "CADASTRO_CIDADE");
+		newName = newName .replaceAll("APOLI", "APOLICE");
+		newName = newName .replaceAll("IMBLR", "IMOBILIARIA");
+		newName = newName .replaceAll("ASSIT", "ASSISTENCIA");
+		newName = newName .replaceAll("TCNCA", "TECNICA");
+		newName = newName .replaceAll("MUN_FIS", "MUNICIPIO_FISCAL");
+		newName = newName .replaceAll("PAGTO", "PAGAMENTO");
+		newName = newName .replaceAll("PRDUT", "PRODUTO");
+		newName = newName .replaceAll("ITRNO", "INTERNO");
+		newName = newName .replaceAll("FORNC", "FORNECEDOR");
+		newName = newName .replaceAll("ULOGUSR", "LOG_USUARIO");
+		newName = newName .replaceAll("GRENT", "GERENTE");
+		newName = newName .replaceAll("ACSSO", "ACESSO");
+		newName = newName .replaceAll("ULTMO", "ULTMO");
+		newName = newName .replaceAll("PN$", "PARCEIRO_NEGOCIO");	
+		newName = newName .replaceAll("PREDR$", "PRESTADOR");
+		newName = newName .replaceAll("PRDUT", "PRODUTO");
+		newName = newName .replaceAll("PROTR$", "PRESTADOR1");
+		newName = newName .replaceAll("CAD_SOC", "QUADRO_SOCIETARIO");
+		newName = newName .replaceAll("QUETN", "QUESTIONARIO");
+		newName = newName .replaceAll("SERVC", "SERVICO");
+		newName = newName .replaceAll("PRCRO", "PARCEIRO_NEGOCIO");
+		newName = newName .replaceAll("RESPT", "RESPOSTA");
+		newName = newName .replaceAll("ASSIT", "ASSISTENCIA");
+		newName = newName .replaceAll("TCNCA", "TECNICA");
+		newName = newName .replaceAll("ELAPCRT", "EMAIL_CORRETOR");
+		newName = newName .replaceAll("ANALIS", "ANALISE");
+		newName = newName .replaceAll("APO_DIG", "APOLICE_DIGITAL");
+		newName = newName .replaceAll("DOCTO", "DOCUMENTO");
+		newName = newName .replaceAll("FVRTO", "FAVORITO");
+		newName = newName .replaceAll("CADTR", "CADASTRO");
+		newName = newName.replaceAll("PACKAGE", "PAKG");
+		newName = newName.replaceAll("GRP_", "GRUPO_");
+		newName = newName .replaceAll("SBU[0-9]+\\_", "");
+		newName = newName .replaceAll("PTM[0-9]+\\_", "");
 		newName = newName .replaceAll("\\_[$&%.]+", "");
 		return newName;
 	}
@@ -616,50 +734,3 @@ public class JdbcHelper {
 	}
 }
 
-class TableImplementation implements  Table {
-
-	private ResultSetMetaData meta;
-	TableImplementation(ResultSetMetaData meta){
-		this.meta = meta;
-	}
-
-	@Override
-	public Class<? extends Annotation> annotationType() {
-		return null;
-	}
-	@Override
-	public String name() {
-		try {
-			return meta.getTableName(1);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	@Override
-	public String catalog() {
-		try {
-			return meta.getCatalogName(1);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
-	@Override
-	public String schema() {
-		try {
-			return meta.getSchemaName(1);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-	@Override
-	public UniqueConstraint[] uniqueConstraints() {
-		return null;
-	}
-	@Override
-	public Index[] indexes() {
-		return null;
-	}}

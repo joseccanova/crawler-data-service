@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import javax.el.ExpressionFactory;
+
 import org.apache.commons.beanutils.ConvertUtils;
 import org.nanotek.beans.EntityBeanInfo;
 import org.nanotek.beans.sun.introspect.PropertyInfo;
@@ -27,15 +29,18 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 	public T populate(T instance, Map<String, Object> payload) {
 		payload.put("beanInstance", instance);
 		Map<String,Object> parameters = Map.class.cast(payload.get("parameters"));
-		payload.putAll(parameters);
-		payloadFilter.apply(payload).entrySet()
-		.stream()
+		if(parameters !=null)
+			payload.putAll(parameters);
+		
+		payload
+		.entrySet()
 		.forEach(e ->{
 			try {
 				String[] vvs = Optional.ofNullable(e).filter(e1 -> isNested(e1.getKey())).map(e1 -> e1.getKey().split("[.]")).orElse(new String[0]);//e.getKey().split("[.]");
 				if (vvs.length==2) {
 					
 					boolean canBeClass =   isClass(vvs[0], instance);
+					boolean hasProperty =   hasProperty(vvs[1], instance);
 					boolean canBeClassProperty = isClassProperty(vvs , instance) ;
 					boolean isProperty = hasProperty(vvs , instance);
 					boolean isClassIdProperty = isClassId(vvs , instance);
@@ -43,7 +48,7 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 					String propertyStr = null;
 					
 					//in matter of fact each of these things will return an interesting thing
-					if (canBeClass) {
+					if (canBeClass || hasProperty) {
 						propertyStr=getClassProperty(vvs,instance);
 					}else if (isClassProperty(vvs , instance)){
 						propertyStr=vvs[0]+"id";
@@ -52,6 +57,7 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 						propertyStr = vvs[1].substring(instance.getClass().getSimpleName().length());
 					}
 					Boolean myResult =  isProperty || canBeClassProperty|| canBeClass ;
+					ExpressionFactory factory = ExpressionFactory.newInstance();
 
 					if (myResult && propertyStr!=null) {
 											try {
@@ -74,6 +80,12 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 		return instance;
 	}
 	
+	private boolean hasProperty(String string, T instance) {
+			if(getMethod(string, instance) !=null)
+				return true;
+			return false;
+	}
+
 	private boolean isClassId(String[] vvs, T instance) {
 		if (vvs[1].length() < instance.getClass().getSimpleName().length())
 			return false;

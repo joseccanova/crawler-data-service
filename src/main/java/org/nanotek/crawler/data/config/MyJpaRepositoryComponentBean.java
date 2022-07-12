@@ -9,7 +9,6 @@ import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.query.JpaQueryMethodFactory;
-import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactoryBean;
 import org.springframework.data.querydsl.EntityPathResolver;
 import org.springframework.data.repository.core.EntityInformation;

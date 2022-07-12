@@ -30,8 +30,7 @@ public class MetaClass implements IClass {
 	@JsonIgnore
 	protected List<MetaRelationClass> metaRelationsClasses;
 
-	@JsonIgnore
-	protected MetaIdentidy identity;
+	protected MetaIdentity identity;
 
 	private List<Table> referencedTables;
 	
@@ -123,11 +122,11 @@ public class MetaClass implements IClass {
 		return metaRelationsClasses;
 	}
 
-	public MetaIdentidy getIdentity() {
+	public MetaIdentity getIdentity() {
 		return identity;
 	}
 
-	public void setIdentity(MetaIdentidy identity) {
+	public void setIdentity(MetaIdentity identity) {
 		this.identity = identity;
 	}
 

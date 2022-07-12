@@ -31,7 +31,7 @@ public class SpringHibernateJpaPersistenceProvider extends HibernatePersistenceP
 		super();
 	}
 
-	
+
 	public SpringHibernateJpaPersistenceProvider(InjectionClassLoader classLoader,
 			PersistenceUnityClassesConfig persistenceUnityClassesConfig) {
 		super();

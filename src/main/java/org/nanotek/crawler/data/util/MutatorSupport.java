@@ -25,7 +25,7 @@ public interface MutatorSupport<T>{
 					return Stream
 							.of(ps)
 							.reduce(z,(test , value)->{
-								if(value.getName().equals(propertyName)) {
+								if(value.getName().equalsIgnoreCase(propertyName)) {
 									test = value;
 								}
 								return test;

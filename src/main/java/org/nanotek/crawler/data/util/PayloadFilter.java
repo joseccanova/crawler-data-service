@@ -24,6 +24,7 @@ public class PayloadFilter implements Filter<Map<String,Object>>{
 				|| e.getKey().equals("node")
 				|| e.getKey().equals("nextStep")
 				|| e.getKey().equals("parameters")
+				|| e.getKey().equals("classPathId")
 				|| isDotNotation(e.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}

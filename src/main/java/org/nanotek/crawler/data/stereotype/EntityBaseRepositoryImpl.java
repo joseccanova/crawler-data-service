@@ -29,8 +29,9 @@ public class EntityBaseRepositoryImpl extends SimpleJpaRepository {
 	
 	
 	private static JpaEntityInformation processInformation(JpaMetamodelEntityInformation info2 , Metamodel meta) {
-		info2.getEntityName() ; 
-		Class<?> entityClass = meta.getEntities().stream().filter(e -> e.getName().equals(info2.getEntityName())).map(e -> e.getJavaType()).findFirst().get();
+		Class<?> entityClass = meta.getEntities().stream()
+										.filter(e -> e.getName().equals(info2.getEntityName())).map(e -> e.getJavaType())
+										.findFirst().get();
 		return new JpaMetamodelEntityInformation(entityClass , meta ) {
 			
 			private Class<?> mutableEntity = entityClass;

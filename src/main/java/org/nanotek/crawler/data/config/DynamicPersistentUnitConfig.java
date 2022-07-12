@@ -21,10 +21,10 @@ import org.hibernate.cfg.Environment;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepositoryImpl;
 import org.nanotek.crawler.data.util.InstancePopulator;
-import org.nanotek.crawler.data.util.PayloadFilter;
 import org.nanotek.crawler.data.util.SearchContextPayloadFilter;
 import org.nanotek.crawler.data.util.db.ControllerClassConfig;
 import org.nanotek.crawler.data.util.db.JdbcHelper;
+import org.nanotek.crawler.data.util.db.PayloadFilter;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
 import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
 import org.nanotek.crawler.data.util.db.SimpleObjectProvider;
@@ -59,6 +59,8 @@ import org.springframework.orm.jpa.persistenceunit.PersistenceUnitPostProcessor;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
@@ -70,6 +72,18 @@ import net.bytebuddy.dynamic.loading.MultipleParentClassLoader;
 		, transactionManagerRef = "transactionManager")
 public class DynamicPersistentUnitConfig implements ApplicationContextAware{
 
+	
+	 @Bean
+	    public WebMvcConfigurer corsConfigurer() {
+	        return new WebMvcConfigurer() {
+	            @Override
+	            public void addCorsMappings(CorsRegistry registry) {
+	                registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE").allowedOrigins("*")
+	                        .allowedHeaders("*");
+	                registry.addMapping("/**");
+	            }
+	        };
+	    }
 	
 	@Bean("classCache")
 	@Qualifier(value="classCache")

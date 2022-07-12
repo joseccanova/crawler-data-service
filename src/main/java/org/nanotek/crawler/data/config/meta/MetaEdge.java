@@ -36,7 +36,6 @@ public class MetaEdge extends DefaultEdge  {
 		.stream()
 		.forEach(c -> {
 			try {
-				log.info("class {}", c);
 					if (c.getField("source") !=null){
 						Field f = c.getField("source");
 						f.setAccessible(true);
@@ -73,7 +72,11 @@ public class MetaEdge extends DefaultEdge  {
 				return false;
 			if(eob.getTarget()==null && this.getTarget()!=null)
 				return false;
-			return eob.getSource().equals(this.getSource())
+			return eob.getSource()!=null 
+			&& 
+					eob.getSource().equals(this.getSource())
+			&& 
+			eob.getTarget() !=null 
 			&& 
 			eob.getTarget().equals(this.getTarget());
 	}

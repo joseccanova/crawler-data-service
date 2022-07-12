@@ -1,14 +1,6 @@
 package org.nanotek.crawler.data.config;
 
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.annotation.Bean;
-import static org.springframework.http.ResponseEntity.*;
-
-import static org.springframework.web.servlet.function.RequestPredicates.*;
-import org.springframework.web.servlet.function.RouterFunction;
-import org.springframework.web.servlet.function.RouterFunctions;
-import org.springframework.web.servlet.function.ServerResponse;
-import static org.springframework.web.servlet.function.RouterFunctions.*;
 
 @SpringBootConfiguration(proxyBeanMethods = false)
 public class GraphQlConfig {

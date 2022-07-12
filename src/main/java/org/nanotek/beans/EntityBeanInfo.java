@@ -9,8 +9,6 @@ import java.util.stream.Stream;
 
 import org.nanotek.beans.sun.introspect.ClassInfo;
 
-import com.thoughtworks.xstream.core.BaseException;
-
 
 public class EntityBeanInfo<E> extends ClassInfo {
 

@@ -20,16 +20,18 @@ import org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.nanotek.crawler.Base;
-import org.nanotek.crawler.BaseEntity;
 import org.nanotek.crawler.data.SearchParameters;
 import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaEdge;
 import org.nanotek.crawler.data.config.meta.TempClass;
+import org.nanotek.crawler.data.domain.mongodb.ClassPath;
+import org.nanotek.crawler.data.mongo.repositories.ClassPathRepository;
 import org.nanotek.crawler.data.stereotype.EntityBaseRepository;
 import org.nanotek.crawler.data.stereotype.InstancePostProcessor;
+import org.nanotek.crawler.data.util.ClassPathInstancePopulator;
 import org.nanotek.crawler.data.util.InstancePopulator;
 import org.nanotek.crawler.data.util.MutatorSupport;
-import org.nanotek.crawler.data.util.PayloadFilter;
+import org.nanotek.crawler.data.util.db.PayloadFilter;
 import org.nanotek.crawler.data.util.db.PersistenceUnityClassesConfig;
 import org.nanotek.crawler.data.util.db.RepositoryClassesConfig;
 import org.nanotek.crawler.data.util.graph.RestClient;
@@ -89,6 +91,7 @@ implements MutatorSupport<T>{
 	}
 
 	public Graph<Class<?> , MetaEdge>   mountRelationGraph() {
+		try { 
 		Graph<Class<?> , MetaEdge> theGraph = prepareGraph() ;
 		if(entityGraph == null)
 		{
@@ -96,6 +99,11 @@ implements MutatorSupport<T>{
 		 this.entityGraph = theGraph;
 		}
 		 return (this.entityGraph );
+		}catch(Exception ex) {
+			log.info("error {} ", ex);
+			this.entityGraph=null;
+			throw new RuntimeException(ex);
+		}
 	}
 
 
@@ -129,16 +137,17 @@ implements MutatorSupport<T>{
 
 
 	private void processVertexRelations(Graph<Class<?> , MetaEdge>  theGraph) {
+		List<MetaEdge> edgesTests = new ArrayList<>();
 		log.info("begin processing relations ");
 		entityClassConfig
 		.keySet()
 		.parallelStream()
-		.forEach(e -> processRelations(theGraph, entityClassConfig.get(e)));
+		.forEach(e -> processRelations(theGraph, entityClassConfig.get(e) , edgesTests));
 		log.info("end processing relations ");
 	}
 
 
-	private Object processRelations(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v) {
+	private Object processRelations(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, List<MetaEdge> edgesTests) {
 		if (!theGraph.containsVertex(v)) {
 			log.info("vertex added {}" , v );
 			theGraph.addVertex(v);
@@ -146,59 +155,78 @@ implements MutatorSupport<T>{
 		entityClassConfig
 		.keySet()
 		.parallelStream()
-		.filter(v2 -> ! v.equals(entityClassConfig.get(v2)))
-		.forEach(e -> verifyRelation (theGraph , v , entityClassConfig.get(e)));
+		.forEach(e -> verifyRelation (theGraph , v , entityClassConfig.get(e) , edgesTests));
 		return true;
 	}
 
 
-	private  void verifyRelation(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1) {
+	private  void verifyRelation(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1, List<MetaEdge> edgeTests) {
 			Class<T> cls1 = (Class<T>)v;
 			Class<T> cls2 = (Class<T>)v1;
 			verifyForeignKeys(entityGraph , Optional.ofNullable(cls1) , Optional.ofNullable(cls2) );
-			processeRelationField( theGraph, v,v1);
+			
+			if (notInGraph(v,v1,edgeTests))
+					processeRelationField( theGraph, v,v1 , edgeTests);
 	}
 	
-	private void processeRelationField(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1) {
-		if(!theGraph.containsVertex(v1)){
-			log.info("vertex1 added {}" , v1 );
-			theGraph.addVertex(v1);
-		}
-		if (!v.equals(v1))
-			Arrays.asList(v.getDeclaredFields()).parallelStream()
+	AtomicInteger ai = new AtomicInteger();
+	
+	private void processeRelationField(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1, List<MetaEdge> edgesTests) {
+		
+		if (!v.equals(v1)) {
+			Arrays.asList(v.getDeclaredFields()).stream()
 			.filter(f -> f.getAnnotation(javax.persistence.Id.class) !=null)
 			.forEach(f -> {
-				Arrays.asList(v1.getDeclaredFields()).parallelStream()
+				Arrays.asList(v1.getDeclaredFields()).stream()
 				.forEach(f1 -> {
 					if(hasFieldEquivalence(f,f1)){
-						AtomicInteger ai = new AtomicInteger();
-						synchronized(ai) {
-							ai.getAndAdd(1);
-							Object edge = theGraph.addEdge(v, v1 , new MetaEdge(v , v1));
-							log.info("the edge {}:" , edge);
+						synchronized(ai){
+							if(!theGraph.containsVertex(v1)){
+								log.info("vertex1 added {}" , v1 );
+								theGraph.addVertex(v1);
+							}
+							MetaEdge edgeTest = new MetaEdge(v , v1);
+							
+								if(!theGraph.containsEdge(edgeTest)) {
+									theGraph.addEdge(v, v1 ,edgeTest);
+									log.info("the edge {}->{} countedges {}" , v , v1 , ai.getAndAdd(1));
+									edgesTests.add(edgeTest);
+								}
 						}
-					}
+						}
 				});
 			});
+		}
 	}
 
+
+	private Boolean notInGraph(Class<?> v, Class<?> v1, List<MetaEdge> edgesTests) {
+			MetaEdge edgeTest = new MetaEdge(v,v1); 
+			return !edgesTests.contains(edgeTest) ;
+	}
 
 	private boolean hasFieldEquivalence(Field f, Field f1) {
 		return Optional.ofNullable(f)
 //		.filter(field -> isId(field) && !isId(f1))
-		.filter(field -> fieldMapOver(field , f1)).isPresent();
+		.map(field -> fieldMapOver(field , f1)).filter(result -> result==true).isPresent();
 	}
 
 	private boolean fieldMapOver(Field field, Field f1) {
+		return hasFieldName(field,f1) && hasPropertyEditor(field,f1) ;
+	}
+
+	private boolean hasPropertyEditor(Field field, Field f1) {
 		PropertyEditor pe = PropertyEditorManager.findEditor(f1.getType());
 		PropertyEditor peField = PropertyEditorManager.findEditor(field.getType());
-		return pe !=null && peField !=null && hasFieldName(field,f1);
+		return pe !=null && peField !=null;	
 	}
 
 	private boolean hasFieldName(Field field, Field f1) {
-		String fieldName = field.getDeclaringClass().getSimpleName() + "id";
-		String fieldName1 = f1.getDeclaringClass().getSimpleName()+"id";
-		return fieldName.toLowerCase().equals(f1.getName().toLowerCase()) || fieldName1.toLowerCase().contains(field.getDeclaringClass().getSimpleName()); 
+		Pattern pat = Pattern.compile("^cod|^id|^num|^cd|id$");
+		Boolean simpleEquivalence = false;
+		if (pat.matcher(field.getName()).find())
+			simpleEquivalence = f1.getName().equalsIgnoreCase(field.getName());
+		return simpleEquivalence; 
 	}
 
 	public Graph<Class<?>, MetaEdge> getEntityGraph() {
@@ -226,32 +254,40 @@ implements MutatorSupport<T>{
 		return MessageChannels.direct("outputChannel").get();
 	}
 	
+	public static final String CLASS1 = "inputClass1";
+	public static final String CLASS2 = "inputClass2";
+	public static final String GRAPH = "graph";
+	public static final String PARAMETERS = "parameters";
+	public static final String PATH = "path"; 
+	public static final String SIMPLE = "simple"; 
+	
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object prepareGraphPayload(Object m) {
 		SearchParameters parameters = SearchParameters.class.cast(m);
 		Map<String,Object> payload = new HashMap<>();
 		List<Class<?>> visited = new ArrayList<>();
-		payload.put("visited", visited);
+		payload.put(VISITED, visited);
 		String inputClass1 = parameters.getInputClass1();
-		payload.put("inputClass1", inputClass1);
+		payload.put(CLASS1, inputClass1);
 		Optional<Class<T>> clazz1 = createClass(inputClass1);
 		String inputClass2 = parameters.getInputClass2();
-		payload.put("inputClass2", inputClass2);
+		payload.put(CLASS2, inputClass2);
 		Optional<Class<T>> clazz2 = createClass(inputClass2);
-		payload.put("graph", mountRelationGraph());
-		payload.put("parameters", parameters.getParameters());
-		DijkstraShortestPath<Class<?> , MetaEdge> bf = new DijkstraShortestPath<>(checkGraph(mountRelationGraph() , payload , clazz1 , clazz2));
+		payload.putAll(parameters.getParameters());
+		payload.put(PARAMETERS, parameters.getParameters());
+		DijkstraShortestPath<Class<?> , MetaEdge> bf = new DijkstraShortestPath<>(checkGraph(payload , clazz1 , clazz2));
 		GraphPath<Class<?> , MetaEdge> g1 = bf.getPath(clazz1.get(),clazz2.get());
-		payload.put("path" , g1);
+		payload.put(PATH, g1);
 		return payload;	
 	}
 	
 
-	private Graph<Class<?>, MetaEdge>  checkGraph(Graph<Class<?>, MetaEdge> entityGraph, Map payload, Optional<Class<T>> clazz1,
+	private Graph<Class<?>, MetaEdge>  checkGraph( Map payload, Optional<Class<T>> clazz1,
 			Optional<Class<T>> clazz2) {
-		if (payload.get("simple") !=null) {
-			Graph<Class<?> , MetaEdge> theGraph = GraphTypeBuilder.<Class<?>, MetaEdge> undirected().allowingMultipleEdges(false)
+		Graph<Class<?> , MetaEdge> theGraph = null;
+		if (payload.get(SIMPLE) !=null) {
+			theGraph = GraphTypeBuilder.<Class<?>, MetaEdge> undirected().allowingMultipleEdges(false)
 					.allowingSelfLoops(true).edgeClass(MetaEdge.class).weighted(false).buildGraph();
 			theGraph.addVertex(clazz1.get());
 			if(!theGraph.containsVertex(clazz2.get())){
@@ -260,9 +296,12 @@ implements MutatorSupport<T>{
 			}else {
 				theGraph.addEdge(clazz1.get(), clazz1.get());
 			}
-			return theGraph;
+			log.info("simple graph {}" , payload.get(SIMPLE));
+		}else {
+			theGraph = mountRelationGraph();
 		}
-		return entityGraph;
+		payload.put(GRAPH, theGraph);
+		return theGraph;
 	}
 	
 	private void verifyForeignKeys(Graph<Class<?>, MetaEdge> entityGraph2, Optional<Class<T>> clazz1,
@@ -325,29 +364,30 @@ implements MutatorSupport<T>{
 	
 	private Object processOutputChannelPayload(Object m) {
 		Map payload = Map.class.cast(m);
-		String inputClass1 = String.class.cast(payload.get("inputClass1"));
-		GraphPath<Class<?> , MetaEdge> g1 = GraphPath.class.cast(payload.get("path"));
+		String inputClass1 = String.class.cast(payload.get(CLASS1));
+		GraphPath<Class<?> , MetaEdge> g1 = GraphPath.class.cast(payload.get(PATH));
 		Class<?> clazz1 = createClass(inputClass1).get();
-		String inputClass2 = String.class.cast(payload.get("inputClass2"));
+		String inputClass2 = String.class.cast(payload.get(CLASS2));
 		Class<?> clazz2 = createClass(inputClass2).get();
 		Object msg1 =  processaClassePayload(m, inputClass1);
 		Map orElse = Map.class.cast(msg1);
 		getNextPath(m , g1 , Optional.of(clazz1)).ifPresentOrElse(c -> {
 			addVisited(clazz1 , msg1); 
 			processNextStep(Map.class.cast(msg1) , g1 , c);
-		}, () -> { orElse.put("inputClass1", Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , orElse);});
+		}, () -> { orElse.put(CLASS1, Class.class.cast(clazz2).getName() ); log.info("what is happening? {} " , orElse);});
 		return msg1;		
 	}
 	
+	public static final String NEXTSTEP = "nextStep";
 	private void processNextStep(Map payload, GraphPath<Class<?>, MetaEdge> g1, Object c) {
-		payload.put("inputClass1", Class.class.cast(c).getName());
-		payload.put("nextStep", c);
+		payload.put(CLASS1, Class.class.cast(c).getName());
+		payload.put(NEXTSTEP, c);
 	}
 	
 	
 	private Class addVisited(Class<?> c , Object m) {
 		Map payload = Map.class.cast(m);
-		List<Class<?>> visited = List.class.cast(payload.get("visited"));
+		List<Class<?>> visited = List.class.cast(payload.get(VISITED));
 		if (!visited.contains(c))
 			visited.add(c);
 		return c;
@@ -361,12 +401,12 @@ implements MutatorSupport<T>{
 	
 	private MessageChannel checkEndpath(Object m) {
 		Map payload = Map.class.cast(m);
-		List<Class<?>> visited = List.class.cast(payload.get("visited"));
-		Class<?> nextStep = (Class<?>) payload.get("nextStep");
+		List<Class<?>> visited = List.class.cast(payload.get(VISITED));
+		Class<?> nextStep = (Class<?>) payload.get(NEXTSTEP);
 
 		return Optional.ofNullable(nextStep)
 				.map(n -> {
-					GraphPath<Class<?>, MetaEdge> path = GraphPath.class.cast(payload.get("path"));
+					GraphPath<Class<?>, MetaEdge> path = GraphPath.class.cast(payload.get(PATH));
 					return  visited.contains(nextStep) ?  nillChannel() : outputChannel();
 				}).orElse(nillChannel());
 	}
@@ -393,6 +433,7 @@ implements MutatorSupport<T>{
 			Class<T> clazzCls= Class.class.cast(beanFactory.getBeanClassLoader().loadClass(classStr));
 			Map<String,Object> payload = Map.class.cast(m);
 			T instance = populateInstance(createIntance(clazzCls) , payload);
+			validateInstance(instance);
 			List<?> result = prepareRepository(instance, payload);
 			Map<String,Object> newPayload = filterPayload(payload);
 			return processNode(objectMapper.convertValue(result, JsonNode.class) , newPayload , Class.class.cast(instance.getClass()));
@@ -401,6 +442,20 @@ implements MutatorSupport<T>{
 		}
 	}
 	
+	private void validateInstance(T instance) {
+		if (Arrays.asList(instance.getClass().getDeclaredFields()).stream().filter(f -> filterFieldName(f.getName())).noneMatch(f -> checkPropertyInstance(f , instance))){
+			throw new RuntimeException("none value present on processing payload for query");
+		}
+	}
+
+	public boolean filterFieldName(String fName) {
+		return !fName.contains("$");
+	}
+	
+	public boolean checkPropertyInstance (Field f , T instance) {
+		WrapDynaBean bean = new WrapDynaBean(instance);
+		return bean.get(f.getName()) !=null;
+	}
 	
 	@Autowired
 	ObjectMapper objectMapper;
@@ -443,23 +498,31 @@ implements MutatorSupport<T>{
 		return payloadFilter.apply(payload);
 	}
 
-	
-	private <P> void populateInstanceToPayload(P pojo, Map payload) {
-		Pattern exclusionPattern = Pattern.compile("[$]");
-		WrapDynaBean bean = new WrapDynaBean(pojo);
-		Arrays.asList(pojo.getClass().getDeclaredFields())
-		.forEach(f -> {
-			if (!exclusionPattern.matcher(f.getName()).find()) {
-					String className = f.getDeclaringClass().getSimpleName().toLowerCase();
-					String fieldName = f.getName().toLowerCase();
-					payload.put(className+"." + fieldName, bean.get(f.getName()));
-			}
-		});
-		
+	protected <P> Optional<?> populateInstanceToPayload(P pojo, Map payload) {
+		ClassStep<P> cp = ClassStep.class.cast(getClassStep(payload , pojo.getClass()));
+		Map<String,Object> payloadpojo = cp.getInstancePayload(pojo);
+		payload.putAll(payloadpojo);
+		return Optional.ofNullable(payload);
 	}
-	
+
+	@Autowired
+	ClassPathRepository classPathRepository;
+	private static final String CP_ID = "classPathId";
+	private <P>  ClassStep<P> getClassStep(Map payload , Class<P> clazz) {
+		
+		String cpId =  String.class.cast(payload.get(CP_ID));
+		
+		if (cpId == null || cpId.isEmpty()) {
+			return new ClassStep(clazz);
+		}
+		
+		return classPathRepository.findById(cpId)
+		.map(cp -> ClassStep.class.cast( new  ClassPathStep(clazz , cp)))
+		.orElse(new ClassStep(clazz));
+	}
+
 	public List<T> prepareRepository(T instance , Map<String,Object> payload){
-		ExampleMatcher matcher = ExampleMatcher.matchingAll().withStringMatcher(StringMatcher.CONTAINING). withIgnoreCase().withIgnoreNullValues();
+		ExampleMatcher matcher = ExampleMatcher.matchingAll().withStringMatcher(StringMatcher.EXACT).withIgnoreNullValues();
 		Example<T> example = Example.of(instance,matcher);
 		return getRepository(instance).findAll(example , PageRequest.of(0, 1000)).toList();
 	}
@@ -473,18 +536,26 @@ implements MutatorSupport<T>{
 		}
 	}
 	
+	
 	@Autowired 
 	@Lazy(true)
 	InstancePopulator<T> instancePopulator;
 	
 	private  T populateInstance(T instance, Map<String, Object> payload) {
-		return instancePopulator.populate(instance, payload);
+		if (payload.get(CP_ID) !=null)
+		{
+				Optional<ClassPath> cp =  Optional.ofNullable(payload.get(CP_ID))
+				.map(cn -> classPathRepository.findById(String.class.cast(cn)).orElseThrow());
+		return  (T) cp.map(cp1 -> new ClassPathInstancePopulator<>(cp1).populate(instance , payload) ).orElse(instancePopulator.populate(instance, payload));
+		}
+		return  instancePopulator.populate(instance, payload);
 	}
-
+	public static final String VISITED = "visited";
+	
 	private Optional<?> getNextPath(Object m , GraphPath<Class<?>, MetaEdge> g1, Optional<Class<?>> clazzz) {
 		return clazzz.map(c -> {
 			Map payload = Map.class.cast(m);
-			List<Class<?>> visited = List.class.cast(payload.get("visited"));
+			List<Class<?>> visited = List.class.cast(payload.get(VISITED));
 			return g1.getEdgeList().stream()
 					.filter(e -> !visited.contains(e.getSource()))
 					.filter(e -> !visited.contains(e.getTarget()))

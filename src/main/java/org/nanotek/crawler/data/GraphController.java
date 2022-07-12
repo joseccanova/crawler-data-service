@@ -66,7 +66,6 @@ public class GraphController {
 		inputTemplate.setDefaultChannel(inputChannel);
 		Message<?> reply = inputTemplate.sendAndReceive(msg);
 		return ResponseEntity.ok(reply);
-		
 	}
 	
 }

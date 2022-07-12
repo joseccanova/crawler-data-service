@@ -125,7 +125,7 @@ public class MbClassesConfig {
 	public Map<Class<?>, String> processMetaClasses(Map<String, String> urlBaseMapping) {
 		Map<Class<?> , String> acxClassCache = new HashMap<>();
 		this.urlBaseMapping = urlBaseMapping;
-		InstanceInfo info =  eurekaClient.getNextServerFromEureka("acx-data-service", false);
+		InstanceInfo info =  eurekaClient.getNextServerFromEureka("crawler-data-service-acx", false);
 		urlBaseMapping
 		.forEach((x , y)->{
 			Path p = Paths.get(y, new String[0]);
@@ -149,8 +149,26 @@ public class MbClassesConfig {
 	
 	
 	private Class<?> proccessMetaClass(MetaClass body) throws ClassNotFoundException {
+		fixPrimaryKeyClass(body);
 		Class<?> clazz = createBaseClass(body, beanFactory.getBeanClassLoader());
 		return clazz;
+	}
+
+	private void fixPrimaryKeyClass(MetaClass body) {
+		if(body.getMetaAttributes()
+		.stream()
+		.filter(a -> a.isId())
+		.count()>1) { 
+			int i = 0;
+			for (MetaDataAttribute att : body.getMetaAttributes()) {
+				if (att.isId()) {
+					i++;
+					if (i > 1) {
+						att.setId(false);
+					}
+				}
+			}
+		}
 	}
 
 	private <T> Class<?> createBaseClass(MetaClass cm, ClassLoader classLoader) {

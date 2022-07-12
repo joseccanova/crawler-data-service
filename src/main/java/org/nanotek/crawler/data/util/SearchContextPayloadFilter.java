@@ -27,7 +27,8 @@ public class SearchContextPayloadFilter implements Filter<Map<String,Object>>{
 				|| e.getKey().equals("node")
 				|| e.getKey().equals("nextStep")
 				|| e.getKey().equals("parameters")
-				|| isDotNotation(e.getKey()) && isIdRelated(e.getKey()) && !importedId(instance, e.getKey()) )
+				|| e.getKey().equals("classPathId")
+				|| isDotNotation(e.getKey()) && isIdRelated(e.getKey()))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 	
@@ -40,8 +41,17 @@ public class SearchContextPayloadFilter implements Filter<Map<String,Object>>{
 	}
 
 	private boolean isIdRelated(String key) {
-		Pattern pat = Pattern.compile("^id|id$" , Pattern.CASE_INSENSITIVE);
-		return pat.matcher(key).find();
+		String keyToTest = key;
+		String[] splitedKey = new String[0];
+		if (isDotNotation(keyToTest)) {
+			splitedKey = key.split("[.]");
+			if (splitedKey.length > 1)
+				keyToTest=splitedKey[splitedKey.length-1];
+		}else {
+			keyToTest = key;
+		}
+		Pattern pat = Pattern.compile("^id|id$|^cod|^numid|^num|^cd" , Pattern.CASE_INSENSITIVE);
+		return pat.matcher(keyToTest).find();
 	}
 
 	private boolean isDotNotation(String key) {
