@@ -1,0 +1,29 @@
+<p-toast></p-toast>
+<div>
+<p-button type="button"   label="Gerar Grafo"  (click)="reprocessClassEsquema()"  styleClass="p-button-text"></p-button>
+<p-button type="button"   label="Gerar SubGrafo"  (click)="processSubGrafo()"  styleClass="p-button-text"></p-button>
+
+<p-dialog header="{{selectedVertex}}" [(visible)]="display">
+    <p-table *ngIf="selectedClass" [value]="selectedClass.metaAttributes" responsiveLayout="scroll">
+							        	<ng-template pTemplate="header">
+							        		<tr>
+							        		<td class="atributoh"><span class="label">Nome</span></td>
+							        		<td class="atributoh">ID?</td>
+							        		<td class="atributoh">Class Java</td>
+							        		<td class="atributoh">Comprimento</td>
+							        		</tr>
+							        	</ng-template>
+							        	<ng-template pTemplate="body" let-attribute>
+							        		<tr>
+							        			<td class="atributo"><span class="g-star-inserted">{{attribute.fieldName}}</span></td>
+									            <td class="atributo"><span class="ng-star-inserted">{{attribute.isId}}</span></td>
+									            <td class="atributo"><span class="ng-star-inserted">{{attribute.clazz}}</span></td>
+									            <td class="atributo"><span class="ng-star-inserted">{{attribute.length}}</span></td>
+							        		</tr>
+							        	</ng-template>
+					        	</p-table>	    
+</p-dialog>
+</div>
+<div id="myDiagramDiv" #myDiagramDiv name="myDiagramDiv" class	="graphContainer">
+<p>model-graph works!</p>
+</div>

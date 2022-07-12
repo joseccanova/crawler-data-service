@@ -1,0 +1,76 @@
+	<div class="p-mb-3">
+        <p-button type="button" icon="pi pi-chevron-left" (click)="prev()" [disabled]="isFirstPage()" styleClass="p-button-text"></p-button>
+        <p-button type="button" icon="pi pi-refresh" (click)="reset()" styleClass="p-button-text"></p-button>
+        <p-button type="button" icon="pi pi-chevron-right" (click)="next()" [disabled]="isLastPage()" styleClass="p-button-text"></p-button>
+    </div>
+			<p-table [value]="classes" [rows]="rows" [first]="first" [totalRecords]="classes.length"
+		        [paginator]="true"  [showCurrentPageReport]="true" (onPage)="onPage($event)" responsiveLayout="scroll" [paginatorPosition]="position" 
+		        currentPageReportTemplate="Showing {{first + 1}} to {{ first + rows}} of {{totalRecords()}} entries" dataKey="classAlias"
+		        [rowsPerPageOptions]="[10,25,50]"
+		        [globalFilterFields]="['classAlias']">
+			    <ng-template pTemplate="header">
+			        <tr>  
+			            <th styleClass="p-sortable-column" pSortableColumn="classAlias">Alias<p-sortIcon field="classAlias"></p-sortIcon>
+			            	<p-columnFilter type="text" field="classAlias" display="menu"></p-columnFilter>
+			             </th>
+			            <th>Name</th>
+			        </tr>
+			    </ng-template>
+			    <ng-template pTemplate="body" let-clazz>
+		        <tr>
+		            <td><p-button type="button"   label="{{clazz.classAlias}}"  (click)="processClassAlias(clazz.classAlias , clazz.className)"  styleClass="p-button-text"></p-button></td>
+		            <td><p-button type="button"   label="{{clazz.className}}"  (click)="processClassAlias(clazz.classAlias , clazz.className)"  styleClass="p-button-text"></p-button></td>
+		        </tr>
+		        <tr *ngIf="selectedClass && clazz.className == selectedClass.className">
+		        	<td colspan="2">
+		        	 <p-panel>
+		        	 <ng-template pTemplate="header">
+		        	 <span class="label atributoh">Classe</span> 
+		        	 </ng-template>
+		        	 <p-tabView>
+						    <p-tabPanel header="{{clazz.classAlias}}">
+					        	<p-table [value]="selectedClass.metaAttributes" responsiveLayout="scroll">
+							        	<ng-template pTemplate="header">
+							        		<tr>
+							        		<td class="atributoh"><span class="label">Nome</span></td>
+							        		<td class="atributoh">ID?</td>
+							        		<td class="atributoh">Class Java</td>
+							        		<td class="atributoh">Comprimento</td>
+							        		</tr>
+							        	</ng-template>
+							        	<ng-template pTemplate="body" let-attribute>
+							        		<tr>
+							        			<td class="atributo"><span class="g-star-inserted">{{attribute.fieldName}}</span></td>
+									            <td class="atributo"><span class="ng-star-inserted">{{attribute.isId}}</span></td>
+									            <td class="atributo"><span class="ng-star-inserted">{{attribute.clazz}}</span></td>
+									            <td class="atributo"><span class="ng-star-inserted">{{attribute.length}}</span></td>
+							        		</tr>
+							        	</ng-template>
+					        	</p-table>	    
+						    </p-tabPanel>
+						    <p-tabPanel>
+							        	<ng-template pTemplate="header"> 
+							        		<span class="label" (click)="clearExample()">Servi&ccedil;o</span>	
+									        <p-button type="button" (click)="processaExemplo(clazz.classAlias)" icon="pi pi-book" styleClass="botaoTopo" label="Exemplo"></p-button>
+											<span class="label" (click)="clearExample()"></span>	
+									        <p-button type="button" (click)="processaBusca(clazz.classAlias)" icon="pi pi-book" styleClass="botaoTopo" label="Processa Busca"></p-button>
+										</ng-template>
+						       			<textarea styleClass="resizeable"  pInputTextarea [rows]="15" [cols]="50"  [(ngModel)]="exampleValue"  [autoResize]="true"></textarea>
+						       			<span class="label" (click)="clearExample()"></span>	
+						       			<textarea styleClass="resizeable"  pInputTextarea [rows]="15" [cols]="50" [autoResize]="true" [(ngModel)]="resultadoBusca"></textarea>
+						    </p-tabPanel>
+				    </p-tabView>
+		    		</p-panel>
+        	</td>
+        </tr>
+    	</ng-template>
+	    <ng-template pTemplate="paginatorleft" (click)="prev()" >
+	            <p-button type="button" icon="pi pi-plus"  styleClass="p-button-text"></p-button>
+	        </ng-template>
+	     <ng-template pTemplate="paginatorright" (click)="next()" >
+	            <p-button type="button" icon="pi pi-cloud"  styleClass="p-button-text"></p-button>
+	     </ng-template>
+	</p-table>
+	<p-dialog header="Classe - {{alias}}" [(visible)]="display">
+    <textarea pInputTextarea [rows]="20" [cols]="50" x="70"  [autoResize]="autoResize">{{exampleValue}}</textarea>
+</p-dialog>

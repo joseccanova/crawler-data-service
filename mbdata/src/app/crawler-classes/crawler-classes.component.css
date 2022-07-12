@@ -1,0 +1,31 @@
+.atributo{
+	text-align: left!;
+}
+
+td .atributo{
+	padding-left: 0px;
+}
+
+.atributoh{
+	text-align: left!;
+	font-size: medium;
+	font-style: oblique;
+	font-weight: bold;
+}
+
+.label {
+	margin-right:1em;
+}
+
+.exemploLink{
+	color: black!;
+	background: yellow;
+};
+
+.botaoTopo{
+	vertical-align: top!;
+};
+
+.resizeable {
+	resize: both;
+};
