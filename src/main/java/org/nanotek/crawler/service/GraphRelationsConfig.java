@@ -132,9 +132,25 @@ implements MutatorSupport<T>{
 
 	
 	private void processClassCache(Graph<Class<?> , MetaEdge>  theGraph) {
-		processVertexRelations(theGraph );
+		List processing = processCreateVertex(theGraph);
+		if (!processing.isEmpty())
+			processVertexRelations(theGraph );
 	}
 
+
+	private List<Boolean> processCreateVertex(Graph<Class<?> , MetaEdge>  theGraph) {
+		return entityClassConfig
+		.keySet()
+		.parallelStream()
+		.map(k -> {
+				Class<?> c = entityClassConfig.get(k);
+				if (!theGraph.containsVertex(c)) {
+					log.info("vertex added {}" , c );
+					theGraph.addVertex(c);
+				}
+				return true;
+		}).collect(Collectors.toList());
+	}
 
 	private void processVertexRelations(Graph<Class<?> , MetaEdge>  theGraph) {
 		List<MetaEdge> edgesTests = new ArrayList<>();
@@ -163,15 +179,15 @@ implements MutatorSupport<T>{
 	private  void verifyRelation(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1, List<MetaEdge> edgeTests) {
 			Class<T> cls1 = (Class<T>)v;
 			Class<T> cls2 = (Class<T>)v1;
-			verifyForeignKeys(entityGraph , Optional.ofNullable(cls1) , Optional.ofNullable(cls2) );
+			verifyForeignKeys(theGraph , Optional.ofNullable(cls1) , Optional.ofNullable(cls2) );
 			
-			if (notInGraph(v,v1,edgeTests))
-					processeRelationField( theGraph, v,v1 , edgeTests);
+//			if (notInGraph(v,v1,edgeTests))
+//					processeRelationField( theGraph, v,v1 , edgeTests);
 	}
 	
 	AtomicInteger ai = new AtomicInteger();
 	
-	private void processeRelationField(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1, List<MetaEdge> edgesTests) {
+	private void processeRelationField1(Graph<Class<?> , MetaEdge>  theGraph, Class<?> v, Class<?> v1, List<MetaEdge> edgesTests) {
 		
 		if (!v.equals(v1)) {
 			Arrays.asList(v.getDeclaredFields()).stream()
@@ -306,7 +322,8 @@ implements MutatorSupport<T>{
 	
 	private void verifyForeignKeys(Graph<Class<?>, MetaEdge> entityGraph2, Optional<Class<T>> clazz1,
 			Optional<Class<T>> clazz2) {
-		clazz2.ifPresent(c ->{
+		
+		clazz2.filter(c2 -> !c2.equals(clazz1.get())).ifPresent(c ->{
 				T instance = createIntance(c);
 				MetaClass meta = instance.getMetaClass();
 				meta.getMetaRelationsClasses()
@@ -319,8 +336,9 @@ implements MutatorSupport<T>{
 							entityGraph2.addVertex(clazz2.get());
 							entityGraph2.addEdge(clazz1.get(), clazz2.get());
 						}else {
-							entityGraph2.addEdge(clazz1.get(), clazz1.get());
+							entityGraph2.addEdge(clazz1.get(), clazz2.get());
 						}
+						log.info("added relation clazz1 {} {}" , clazz1,clazz2);
 					}
 				});
 		});

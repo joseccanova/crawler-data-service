@@ -461,9 +461,9 @@ public class JdbcHelper {
 
 		SchemaInfoLevelBuilder vuilder = SchemaInfoLevelBuilder.builder()
 							.setRetrieveAdditionalColumnAttributes(true)
-							.setRetrieveAdditionalColumnMetadata(false)
+							.setRetrieveAdditionalColumnMetadata(true)
 							.setRetrieveColumnDataTypes(true)
-							.setRetrieveForeignKeys(false)
+							.setRetrieveForeignKeys(true)
 							.setRetrieveIndexes(true)
 							.setRetrieveIndexInformation(true)
 							.setRetrieveTriggerInformation(false)
@@ -489,7 +489,7 @@ public class JdbcHelper {
 				
 				return tables.parallelStream()
 								.filter(t1 ->  t1.getColumns() !=null)
-								.filter(t1 -> t1.getColumns().size()>0)
+								.filter(t1 -> !t1.getColumns().isEmpty())
 								.map(t -> processMetaClass(t))
 								.filter(m -> m.isPresent())
 								.map(m->m.get())

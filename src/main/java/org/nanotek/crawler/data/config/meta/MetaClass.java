@@ -22,7 +22,7 @@ public class MetaClass implements IClass {
 	protected List<MetaDataAttribute> metaAttributes = new ArrayList<>();
 
 	@JsonIgnore
-	private boolean hasPrimeraryKey;
+	private boolean hasPrimraryKey;
 
 	@JsonIgnore
 	protected Table table;
@@ -92,7 +92,7 @@ public class MetaClass implements IClass {
 
 	@Override
 	public void hasPrimaryKey(boolean b) {
-		this.hasPrimeraryKey = b;
+		this.hasPrimraryKey = b;
 	}
 
 	@Override
@@ -102,7 +102,7 @@ public class MetaClass implements IClass {
 
 	@Override
 	public void setHasPrimeraryKey(boolean hasPrimeraryKey) {
-		this.hasPrimeraryKey = hasPrimeraryKey;
+		this.hasPrimraryKey = hasPrimeraryKey;
 	}
 
 	public void setTable(Table t) {

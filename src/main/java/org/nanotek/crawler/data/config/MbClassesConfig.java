@@ -45,7 +45,7 @@ public class MbClassesConfig {
 
 
 	public static final String PACKAGE = "org.nanotek.entity.mb.";
-	public final String PORTAL_PACKAGE = "org.nanotek.entity.data";
+	public static final String PORTAL_PACKAGE = "org.nanotek.entity.data";
 
 	@Autowired
 	@Lazy(true)

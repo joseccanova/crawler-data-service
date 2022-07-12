@@ -1,0 +1,93 @@
+debug: true
+
+server:
+  servlet:
+    context-path: /
+  port: 8086
+  
+spring:
+  jmx:
+    enabled: true
+  boot:
+    admin:
+      client:
+        enable: true
+        auto-registration: true
+  application:
+    name: mb-data-service
+  activemq:
+   broker-url: tcp://localhost:61616
+  datasource:
+    jdbcUrl: jdbc:postgresql://127.0.0.1:5432/musicbrainz
+    url: jdbc:postgresql://127.0.0.1:5432/musicbrainz
+    username: postgres 
+    password: postgres123   
+  hikari:
+    connectionTimeout: 30000
+    maximumPoolSize: 250
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate.globally_quoted_identifiers: true
+    hibernate.current_session_context_class: thread
+    properties:
+      hibernate:
+        format_sql: true
+        globally_quoted_identifiers: true
+        current_session_context_class: thread
+        ddl-auto: none
+        javax:
+         cache:
+            provider: org.ehcache.jsr107.EhcacheCachingProvider
+        cache:
+           use_second_level_cache: false
+           use_query_cache: false
+           region:
+              factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+  ehcache:
+      config: classpath:ehcache.xml                  
+  properties:
+    javax:
+      persistence:
+        sharedCache: 
+            #required - enable selective caching mode - only entities with @Cacheable annotation will use L2 cache.
+        mode: ENABLE_SELECTIVE 
+  cloud:
+     config:
+       enabled: false
+  graphql:
+    schema:
+      printer:
+        enabled: true            
+     
+management:
+   endpoint:
+     health:
+       show-details: always
+   endpoints:
+      web:
+         cors:
+           allowed-origins: '*'
+           allowed-methods: GET,POST
+         base-path: /actuator
+         exposure:
+            include: "*"
+   jmx:
+     exposure:
+       include: "*"
+
+eureka:
+  instance:
+    hostname: localhost
+    eureka-server-port: 8088
+    non-secure-port: 8086
+    non-secure-port-enabled: true
+    instanceId: ${spring.application.name}:${random.value}
+    statusPageUrlPath: /actuator/info
+    healthCheckUrlPath: /actuator/health
+  client:
+    enabled: true
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${eureka.instance.eureka-server-port}/eureka-server/eureka
+                     

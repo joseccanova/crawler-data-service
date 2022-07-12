@@ -191,7 +191,7 @@ public class DbSchemaHelper {
 		return baseClass;
 	}
 
-	
+
 	private void fixPrimaryKey(MetaClass cm) {
 		
 		Optional.ofNullable(cm.getIdentity())
@@ -206,7 +206,7 @@ public class DbSchemaHelper {
 			}else if (cm.getMetaAttributes().parallelStream().filter(a -> a.isId()).count()==1){
 				log.info("class name {} " , cm.getClassName());
 			}else { 
-				throw new RuntimeException("fuck fuck fuck");
+				throw new RuntimeException("");
 			}
 		return;
 	}

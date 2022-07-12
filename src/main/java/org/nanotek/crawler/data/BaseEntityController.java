@@ -128,13 +128,13 @@ extends RepositoryBaseController<T , B> // , SimpleRepresentationModelAssembler<
 	}
 	
 	@GetMapping(path="/one/{id}" ,  produces= {MediaType.APPLICATION_JSON_VALUE})
-	default ResponseEntity<?> getMetaDataClassesById(@PathVariable(name = "id") ID id) throws Exception{
+	default ResponseEntity<B> getMetaDataClassesById(@PathVariable(name = "id") ID id) throws Exception{
 		return  ResponseEntity.ok(getRepository().findById(id).orElseThrow());
 	}
 	
 	
 	@GetMapping(path="/example" , consumes = {MediaType.APPLICATION_JSON_VALUE} , produces= {MediaType.APPLICATION_JSON_VALUE})
-	default ResponseEntity<?> getMetaDataClassesByExample(@RequestBody JsonNode jsonMap) throws Exception{
+	default ResponseEntity<?> getMetaDataClassesByExample(@RequestBody JsonNode jsonMap) {
 		B b = populateInstanceFromJsonNode(jsonMap).orElseThrow();
 		Example<B> queryExample = Example.of(b);
 		return  ResponseEntity.ok(getRepository().findAll(queryExample));
