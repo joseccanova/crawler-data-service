@@ -47,13 +47,18 @@ public class GraphController {
 		return ResponseEntity.ok(relationService.getGraphPath(jsonNode) );
 	}
 	
+	@GetMapping(path="/paths")
+	public ResponseEntity<?> getPaths(@RequestBody JsonNode jsonNode){
+		return ResponseEntity.ok(relationService.getGraphPaths(jsonNode) );
+	}
+	
 	@GetMapping(path="/repositories")
 	public ResponseEntity<?> getPath(){
 		return ResponseEntity.ok(relationService.getRepositories());
 	}
 	
 	@PostMapping(path="/add_invalid_edge")
-	public ResponseEntity<?> addInvalidEdge(@RequestBody JsonNode node){
+	public ResponseEntity<MetaEdge> addInvalidEdge(@RequestBody JsonNode node){
 		TempClass tempClass = objectMapper.convertValue(node, TempClass.class);
 		String cls1 = tempClass.getSource();
 		String cls2 = tempClass.getTarget();
@@ -64,6 +69,17 @@ public class GraphController {
 			relationService.getInvalidEdges().add(me);
 		}
 		return ResponseEntity.ok(me);
+	}
+	
+	@PostMapping(path="/add_invalid_vertex")
+	public ResponseEntity<Class<?>> addInvalidVertex(@RequestBody JsonNode node){
+		TempClass tempClass = objectMapper.convertValue(node, TempClass.class);
+		String cls1 = tempClass.getSource();
+		Class<?> cl = (Class<?>) relationService.getEntityClassConfig().get(cls1);
+		if(!relationService.getInvalidVertex().contains(cl)) {
+			relationService.getInvalidVertex().add(cl);
+		}
+		return ResponseEntity.ok(cl);
 	}
 	
 	@Autowired

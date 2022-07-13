@@ -18,6 +18,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.shortestpath.BidirectionalDijkstraShortestPath;
 import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jgrapht.alg.shortestpath.YenKShortestPath;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.nanotek.crawler.Base;
 import org.nanotek.crawler.data.SearchParameters;
@@ -81,6 +82,12 @@ implements MutatorSupport<T>{
 		return invalidEdges;
 	}
 	
+	List<Class<?>> invalidVertex = new ArrayList<>();
+	
+	public  List<Class<?>> getInvalidVertex() {
+		return invalidVertex;
+	}
+	
 	private Graph<Class<?>, MetaEdge> entityGraph;
 
 	@Autowired
@@ -135,7 +142,26 @@ implements MutatorSupport<T>{
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public List<GraphPath<Class<?> , MetaEdge>> getGraphPaths(JsonNode jsonNode) {
+		try {
+		TempClass map= mapper.convertValue(jsonNode, TempClass.class);
+		Class<?> sourcls = beanFactory.getBeanClassLoader().loadClass(map.getSource());
+		Class<?> targetcls = beanFactory.getBeanClassLoader().loadClass(map.getTarget());
+		Graph<Class<?> , MetaEdge> relationGraph = mountRelationGraph();
+//		BidirectionalDijkstraShortestPath<Class<?>, MetaEdge> djkstra = new BidirectionalDijkstraShortestPath<>(relationGraph);
+		YenKShortestPath yenk = new YenKShortestPath(relationGraph ,simplePathValidator() );
+		return yenk.getPaths(sourcls, targetcls, 3);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
 
+	@Bean
+	SimplePathValidator simplePathValidator() {
+		return new SimplePathValidator();
+	}
 	
 	private void processClassCache(Graph<Class<?> , MetaEdge>  theGraph) {
 		List processing = processCreateVertex(theGraph);
@@ -146,16 +172,16 @@ implements MutatorSupport<T>{
 
 	private List<Boolean> processCreateVertex(Graph<Class<?> , MetaEdge>  theGraph) {
 		return entityClassConfig
-		.keySet()
-		.parallelStream()
-		.map(k -> {
-				Class<?> c = entityClassConfig.get(k);
-				if (!theGraph.containsVertex(c)) {
-					log.info("vertex added {}" , c );
-					theGraph.addVertex(c);
-				}
-				return true;
-		}).collect(Collectors.toList());
+				.keySet()
+				.parallelStream()
+				.map(k -> {
+						Class<?> c = entityClassConfig.get(k);
+						if (!theGraph.containsVertex(c)) {
+							log.info("vertex added {}" , c );
+							theGraph.addVertex(c);
+						}
+						return true;
+				}).collect(Collectors.toList());
 	}
 
 	private void processVertexRelations(Graph<Class<?> , MetaEdge>  theGraph) {
