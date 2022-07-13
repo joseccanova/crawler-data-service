@@ -174,8 +174,8 @@ public class JdbcHelper {
 			.getMetaAttributes()
 			.stream()
 			.collect(Collectors
-					.groupingBy(f -> processMetaAttributeIdentity(f)))
-					.entrySet().stream().filter(e -> verifyMatch1Size(e))
+					.groupingBy(this::processMetaAttributeIdentity))
+					.entrySet().stream().filter(this::verifyMatch1Size)
 					.forEach(att -> fixAttName(att.getValue()));
 					
 		Class<?> baseClass =  Optional.of(cm).filter(cm1 -> cm1.getMetaAttributes().stream().anyMatch(cm11 -> cm11.isId()))

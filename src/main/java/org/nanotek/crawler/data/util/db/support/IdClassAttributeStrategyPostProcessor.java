@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.nanotek.crawler.data.config.meta.IClass;
-import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.util.db.JdbcHelper;
 
-public class IdClassAttributeStrategyPostProcessor implements MetaClassPostPorcessor<IClass> {
+public class IdClassAttributeStrategyPostProcessor implements MetaClassProcessor<IClass> {
 
 	@Override
 	public void verifyMetaClass(IClass instance) {
