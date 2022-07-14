@@ -18,3 +18,6 @@ Recommended articles:
 -------------------------
 ###Maybe could help on this topic... 
 https://martinfowler.com/data/
+
+### Found OrientDB i remember already put my eyes on it. 
+https://orientdb.org/docs/3.0.x/
