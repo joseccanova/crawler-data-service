@@ -21,3 +21,8 @@ https://martinfowler.com/data/
 
 ### Found OrientDB i remember already put my eyes on it. 
 https://orientdb.org/docs/3.0.x/
+
+### and this article. 
+
+https://hal.archives-ouvertes.fr/hal-01803448/document
+
