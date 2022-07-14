@@ -26,3 +26,5 @@ https://orientdb.org/docs/3.0.x/
 
 https://hal.archives-ouvertes.fr/hal-01803448/document
 
+### Oracle Property Graphs. didn't get it how it works.
+
