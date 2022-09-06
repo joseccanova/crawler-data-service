@@ -5,18 +5,18 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.EqualsAndHashCode.Exclude;
 import lombok.NoArgsConstructor;
 
 @Document
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class ClassPath extends  Identity{
 	
+	private static final long serialVersionUID = 8749186657095081593L;
+
 	String pathName;
 	
 	@Exclude
@@ -27,6 +27,10 @@ public class ClassPath extends  Identity{
 		super(id);
 		this.pathName = pathName; 
 		this.payloadDefinition = payloadDefinition;
+	}
+
+	public ClassPayloadDefinition getPayloadDefinition() {
+		return payloadDefinition;
 	}
 	
 }

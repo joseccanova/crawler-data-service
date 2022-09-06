@@ -16,11 +16,10 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @param <T>
  */
-@Slf4j
 public class ClassStep<T> {
 
 	protected Class<T> clazz;
-	
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ClassStep.class);
 	protected Function<T , Map<String,Object>> payloadFields = (y) -> transform(y);
 
 	protected Map<String,Object> transform(T y) {

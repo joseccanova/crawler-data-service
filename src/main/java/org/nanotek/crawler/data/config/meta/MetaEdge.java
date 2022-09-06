@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import org.jgrapht.graph.DefaultEdge;
+import org.nanotek.crawler.data.util.InstancePopulator;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -24,10 +25,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @SuppressWarnings("serial")
 @Builder
-@Slf4j
 @ToString
 public class MetaEdge extends DefaultEdge  {
 
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MetaEdge.class);
 
 	public MetaEdge() {}
 	

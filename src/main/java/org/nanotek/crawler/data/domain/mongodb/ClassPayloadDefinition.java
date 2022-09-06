@@ -1,9 +1,9 @@
 package org.nanotek.crawler.data.domain.mongodb;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
@@ -40,5 +40,9 @@ public class ClassPayloadDefinition extends  Identity{
 		this.inputClass2 = inputClass2;
 		this.attributeFilters = attributeFilters;
 		this.attributeExtractions = attributeExtractions;
+	}
+
+	public List<PayloadAttribute>  getAttributeFilters() {
+		return attributeFilters;
 	}
 }

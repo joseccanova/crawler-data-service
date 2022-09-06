@@ -20,7 +20,8 @@ import org.nanotek.crawler.data.util.*;
 public class ClassPathStep<T> extends ClassStep<T> {
 
 	protected ClassPath classPath;
-	
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ClassPathStep.class);
+
 	public ClassPathStep() {
 		super();
 	}

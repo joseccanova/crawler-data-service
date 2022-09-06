@@ -8,24 +8,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.EqualsAndHashCode.Exclude;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import schemacrawler.schema.PrimaryKey;
 import schemacrawler.schema.TableConstraintColumn;
 
 @Data
-@Getter 
-@Setter 
 @EqualsAndHashCode
 @ToString
 public class MetaIdentity {
 
-	@JsonIgnore
-	@Exclude
-	@lombok.ToString.Exclude
-	protected PrimaryKey key;
+	
 	private String definition;
 	private String shortName;
 	private String name;
@@ -44,11 +36,10 @@ public class MetaIdentity {
 	private void prepareMetaIdentity(PrimaryKey key2) {
 		Optional.ofNullable(key2)
 		.ifPresent(k-> {
-			this.key = k;
-			this.definition =this. key.getDefinition();
-			this.shortName = this.key.getShortName();
-			this.name = this.key.getName();
-			prepareColumns(this.key.getColumns());
+			this.definition =key2.getDefinition();
+			this.shortName = key2.getShortName();
+			this.name = key2.getName();
+			prepareColumns(key2.getConstrainedColumns());
 		});
 	}
 
@@ -63,6 +54,38 @@ public class MetaIdentity {
 			});
 		});
 		
+	}
+
+	public String getDefinition() {
+		return definition;
+	}
+
+	public void setDefinition(String definition) {
+		this.definition = definition;
+	}
+
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public List<PkColumn> getColumns() {
+		return columns;
+	}
+
+	public void setColumns(List<PkColumn> columns) {
+		this.columns = columns;
 	}
 
 

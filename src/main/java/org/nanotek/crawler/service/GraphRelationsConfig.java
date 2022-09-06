@@ -68,6 +68,8 @@ import schemacrawler.schema.Table;
 public class GraphRelationsConfig<T extends Base<?,?> , R extends EntityBaseRepository<T, ?>> 
 implements MutatorSupport<T>{
 
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GraphRelationsConfig.class);
+
 	@Autowired
 	PersistenceUnityClassesConfig entityClassConfig;
 	

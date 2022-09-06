@@ -11,11 +11,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Document
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class PayloadAttribute extends  Identity{
+
+	private static final long serialVersionUID = -7692301069122718485L;
 
 	protected String payloadAttribute;
 	
@@ -28,6 +29,30 @@ public class PayloadAttribute extends  Identity{
 		super(id);
 		this.payloadAttribute = payloadAttribute;
 		this.payloadClassString = payloadClassString;
+		this.aliases = aliases;
+	}
+
+	public String getPayloadAttribute() {
+		return payloadAttribute;
+	}
+
+	public void setPayloadAttribute(String payloadAttribute) {
+		this.payloadAttribute = payloadAttribute;
+	}
+
+	public String getPayloadClassString() {
+		return payloadClassString;
+	}
+
+	public void setPayloadClassString(String payloadClassString) {
+		this.payloadClassString = payloadClassString;
+	}
+
+	public List<String> getAliases() {
+		return aliases;
+	}
+
+	public void setAliases(List<String> aliases) {
 		this.aliases = aliases;
 	}
 	

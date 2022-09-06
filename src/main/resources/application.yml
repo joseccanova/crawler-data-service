@@ -21,7 +21,7 @@ spring:
     jdbcUrl: jdbc:postgresql://127.0.0.1:5432/musicbrainz
     url: jdbc:postgresql://127.0.0.1:5432/musicbrainz
     username: postgres 
-    password: postgres123   
+    password: 123456   
   hikari:
     connectionTimeout: 30000
     maximumPoolSize: 250
@@ -89,5 +89,5 @@ eureka:
     enabled: true
     registryFetchIntervalSeconds: 5
     serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:${eureka.instance.eureka-server-port}/eureka-server/eureka
+      defaultZone: http://${eureka.instance.hostname}:${eureka.instance.eureka-server-port}/eureka
                      

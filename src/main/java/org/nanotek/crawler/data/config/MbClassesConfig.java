@@ -43,6 +43,7 @@ import net.bytebuddy.dynamic.DynamicType.Builder;
 @SpringBootConfiguration
 public class MbClassesConfig {
 
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MbClassesConfig.class);
 
 	public static final String PACKAGE = "org.nanotek.entity.mb.";
 	public static final String PORTAL_PACKAGE = "org.nanotek.entity.data";

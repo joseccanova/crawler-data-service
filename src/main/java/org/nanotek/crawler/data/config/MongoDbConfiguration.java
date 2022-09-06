@@ -8,6 +8,7 @@ import org.nanotek.crawler.data.domain.mongodb.QClassPath;
 import org.nanotek.crawler.data.mongo.repositories.ClassPathRepository;
 import org.nanotek.crawler.data.mongo.repositories.ClassPayloadDefinitionRepository;
 import org.nanotek.crawler.data.mongo.repositories.PayloadAttributeRepository;
+import org.nanotek.crawler.data.util.InstancePopulator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
@@ -45,8 +46,8 @@ import lombok.extern.slf4j.Slf4j;
 @EnableAutoConfiguration
 @EnableMongoAuditing
 @ComponentScan({"org.nanotek.crawler.data.mongo.repositories" , "org.nanotek.crawler.data.config"}  )
-@Slf4j
 public class MongoDbConfiguration {
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MongoDbConfiguration.class);
 
 	@Bean
 	public MongoClient mongo() {

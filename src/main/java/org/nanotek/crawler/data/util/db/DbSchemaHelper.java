@@ -72,6 +72,7 @@ import schemacrawler.tools.utility.SchemaCrawlerUtility;
 public class DbSchemaHelper {
 	
 	public static final String PACKAGE =  "org.nanotek.entity.mb.";  ;
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DbSchemaHelper.class);
 
 
 	@Autowired

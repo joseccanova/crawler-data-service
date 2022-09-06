@@ -11,6 +11,7 @@ import org.apache.commons.beanutils.ConvertUtils;
 import org.nanotek.beans.EntityBeanInfo;
 import org.nanotek.beans.sun.introspect.PropertyInfo;
 import org.nanotek.crawler.data.stereotype.Populator;
+import org.nanotek.crawler.service.GraphRelationsConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,9 @@ public class  InstancePopulator<T> implements Populator<T, Map<String,Object>>{
 
 	@Autowired
 	SearchContextPayloadFilter  payloadFilter; 
+	
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(InstancePopulator.class);
+
 	
 	public InstancePopulator() {}
 	

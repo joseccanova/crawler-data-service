@@ -43,6 +43,7 @@ import org.nanotek.crawler.data.config.meta.MetaIdentity;
 import org.nanotek.crawler.data.config.meta.MetaRelationClass;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
+import org.nanotek.crawler.service.GraphRelationsConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -72,6 +73,8 @@ import schemacrawler.tools.utility.SchemaCrawlerUtility;
 public class JdbcHelper {
 	
 	public static final String PACKAGE =  "org.nanotek.entity.mb.";  ;
+	
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JdbcHelper.class);
 
 
 	@Autowired
