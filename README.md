@@ -7,6 +7,8 @@ this version probably will work. still have some hard code ahead but then we are
 
 Thanks to bytebuddy and schema-crawler the thing works. 
 
+Metamodel processing.
+
 ![](https://docs.google.com/drawings/d/e/2PACX-1vQrZjz_1AdIjHxAOfh9IzEe8aNKx94QDwpw9fO40FKVH9ktFe9mDiARtz0pmSXm4G8bkOAIkqGFQZoB/pub?w=640&h=480)
 
 Recommended articles: 
