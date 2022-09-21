@@ -36,10 +36,10 @@ public class MetaIdentity {
 	private void prepareMetaIdentity(PrimaryKey key2) {
 		Optional.ofNullable(key2)
 		.ifPresent(k-> {
-			this.definition =key2.getDefinition();
-			this.shortName = key2.getShortName();
-			this.name = key2.getName();
-			prepareColumns(key2.getConstrainedColumns());
+			this.definition =k.getDefinition();
+			this.shortName = k.getShortName();
+			this.name = k.getName();
+			prepareColumns(k.getConstrainedColumns());
 		});
 	}
 

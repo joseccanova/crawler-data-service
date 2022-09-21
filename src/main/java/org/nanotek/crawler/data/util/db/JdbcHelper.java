@@ -68,11 +68,10 @@ import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaInfoLevelBuilder;
 import schemacrawler.tools.utility.SchemaCrawlerUtility;
 
-@Slf4j
 @SuppressWarnings({"rawtypes"})
 public class JdbcHelper {
 	
-	public static final String PACKAGE =  "org.nanotek.entity.mb.";  ;
+	public static final String PACKAGE =  "org.nanotek.entity.mb."; 
 	
 	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(JdbcHelper.class);
 
