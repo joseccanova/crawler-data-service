@@ -262,13 +262,28 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+			    <groupId>org.apache.maven.doxia</groupId>
+			    <artifactId>doxia-core</artifactId>
+			    <version>2.0.0-M3</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<build>
 		<plugins>
 			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-site-plugin</artifactId>
+    			<version>3.12.1</version>
+			</plugin>
+			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-project-info-reports-plugin</artifactId>
+			        <version>3.4.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -280,6 +295,55 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-javadoc-plugin</artifactId>
+			    <version>3.4.1</version>
+			    <configuration>
+         			 <show>private</show>
+         			 <nohelp>true</nohelp>
+       			 </configuration>
+			</plugin>
 		</plugins>
 	</build>
+	<reporting>
+		<plugins>
+		<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+		<version>3.4.1</version>
+        <reportSets>
+          <reportSet><!-- by default, id = "default" -->
+            <reports><!-- select non-aggregate reports -->
+              <report>javadoc</report>
+              <report>test-javadoc</report>
+            </reports>
+          </reportSet>
+          </reportSets>
+          </plugin>
+			<plugin>
+			    <groupId>org.apache.maven.plugins</groupId>
+			    <artifactId>maven-site-plugin</artifactId>
+    			<version>3.12.1</version>
+			</plugin>
+			<plugin>
+			        <groupId>org.apache.maven.plugins</groupId>
+			        <artifactId>maven-project-info-reports-plugin</artifactId>
+			        <version>3.4.1</version>
+			        <reportSets>
+			          <reportSet>
+			            <reports>
+			              <report>dependencies</report>
+			              <report>team</report>
+			              <report>mailing-lists</report>
+			              <report>ci-management</report>
+			              <report>issue-management</report>
+			              <report>licenses</report>
+			              <report>scm</report>
+			            </reports>
+			          </reportSet>
+			        </reportSets>
+      		</plugin>
+      	</plugins>
+      </reporting>
 </project>
