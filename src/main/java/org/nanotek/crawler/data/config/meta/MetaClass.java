@@ -32,6 +32,7 @@ public class MetaClass implements IClass {
 
 	protected MetaIdentity identity;
 
+	@JsonIgnore
 	private List<Table> referencedTables;
 	
 	public MetaClass() {

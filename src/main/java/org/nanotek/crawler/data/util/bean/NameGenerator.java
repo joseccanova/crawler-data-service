@@ -91,7 +91,8 @@ public class NameGenerator {
      * @param instance object used to generate string
      * @return a unique string representing the object
      */
-    public String instanceName(Object instance) {
+    @SuppressWarnings("rawtypes")
+	public String instanceName(Object instance) {
         if (instance == null) {
             return "null";
         }

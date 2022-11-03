@@ -7,8 +7,6 @@ import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,7 +41,6 @@ import org.nanotek.crawler.data.config.meta.MetaIdentity;
 import org.nanotek.crawler.data.config.meta.MetaRelationClass;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
-import org.nanotek.crawler.service.GraphRelationsConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -51,7 +48,6 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.ClassFileVersion;
 import net.bytebuddy.description.annotation.AnnotationDescription;
@@ -410,23 +406,27 @@ public class JdbcHelper {
 		
 		TypeDefinition td = TypeDescription.Generic.Builder.parameterizedType(Base.class  , Base.class.asSubclass(BaseEntity.class) , idClass).build();
 		Builder bd = new ByteBuddy(ClassFileVersion.JAVA_V8)
-				.subclass(td)
-				.name(PACKAGE+myClassName)
-				.annotateType(rootAnnotation)
-				.annotateType(new EntityImpl(myClassName))
-				.annotateType(new TableImpl(tableName))
-				.withHashCodeEquals()
-				.withToString()
-				.method(named("getMetaClass")).intercept(FixedValue.value(MetaClass.class.cast(cm11)));
+						.subclass(td)
+						.name(PACKAGE+myClassName)
+						.annotateType(rootAnnotation)
+						.annotateType(new EntityImpl(myClassName))
+						.annotateType(new TableImpl(tableName))
+						.withHashCodeEquals()
+						.withToString()
+						.method(named("getMetaClass"))
+						.intercept(FixedValue.value(MetaClass.class.cast(cm11)));
 			return bd;
 	}
 	
+	//TODO:implement an strategy to generate the apropriate id class.
 	public Class<?> getIdClass(IClass metaClass){
-		return metaClass.getMetaAttributes()
-		.stream()
-		.filter(att -> att.isId())
-		.findAny().orElseThrow().getClazz();
-		
+		return metaClass
+				.getMetaAttributes()
+				.stream()
+				.filter(att -> att.isId())
+				.findAny()
+				.orElseThrow()
+				.getClazz();
 	}
 
 
@@ -461,17 +461,18 @@ public class JdbcHelper {
 	
 	public  List<MetaClass> getClassMaps() throws Exception {
 
-		SchemaInfoLevelBuilder vuilder = SchemaInfoLevelBuilder.builder()
-							.setRetrieveAdditionalColumnAttributes(true)
-							.setRetrieveAdditionalColumnMetadata(true)
-							.setRetrieveColumnDataTypes(true)
-							.setRetrieveForeignKeys(true)
-							.setRetrieveIndexes(true)
-							.setRetrieveIndexInformation(true)
-							.setRetrieveTriggerInformation(false)
-							.setRetrievePrimaryKeys(true)
-							.setRetrieveTableColumns(true)
-							.setRetrieveTables(true);
+		SchemaInfoLevelBuilder vuilder = SchemaInfoLevelBuilder
+											.builder()
+											.setRetrieveAdditionalColumnAttributes(true)
+											.setRetrieveAdditionalColumnMetadata(true)
+											.setRetrieveColumnDataTypes(true)
+											.setRetrieveForeignKeys(true)
+											.setRetrieveIndexes(true)
+											.setRetrieveIndexInformation(true)
+											.setRetrieveTriggerInformation(false)
+											.setRetrievePrimaryKeys(true)
+											.setRetrieveTableColumns(true)
+											.setRetrieveTables(true);
 				
 		final LoadOptionsBuilder loadOptionsBuilder =
 				LoadOptionsBuilder.builder()
@@ -497,7 +498,7 @@ public class JdbcHelper {
 								.map(m->m.get())
 								.collect(Collectors.toList());
 		}
-
+	
 	private Optional<MetaClass> processMetaClass(schemacrawler.schema.Table t) {
 		MetaClass meta = new MetaClass();
 		t.getForeignKeys().stream()
@@ -509,8 +510,10 @@ public class JdbcHelper {
 		String newName = processNameTranslationStrategy(t.getName());
 		meta.setClassName(newName);
 		meta.setTableName(t.getFullName());
+		//TODO: decompose id to process identity properly.
 		MetaIdentity mi = new MetaIdentity(t.getPrimaryKey());
 		meta.setIdentity(mi);
+		//TODO: refactor here is not good.
 		t.getColumns().stream()
 		.forEach(c ->{
 			if (meta.getIdentity() !=null) {
