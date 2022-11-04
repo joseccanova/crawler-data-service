@@ -39,6 +39,10 @@ import org.nanotek.crawler.data.config.meta.MetaClass;
 import org.nanotek.crawler.data.config.meta.MetaDataAttribute;
 import org.nanotek.crawler.data.config.meta.MetaIdentity;
 import org.nanotek.crawler.data.config.meta.MetaRelationClass;
+import org.nanotek.crawler.data.config.meta.classifier.Classifier;
+import org.nanotek.crawler.data.config.meta.classifier.IdentityPredicate;
+import org.nanotek.crawler.data.config.meta.classifier.IdentityResult;
+import org.nanotek.crawler.data.config.meta.classifier.PrimaryKeyClassifier;
 import org.nanotek.crawler.data.util.db.support.MetaClassPostProcessor;
 import org.nanotek.crawler.legacy.util.Holder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +62,7 @@ import net.bytebuddy.dynamic.loading.InjectionClassLoader;
 import net.bytebuddy.implementation.FixedValue;
 import schemacrawler.schema.Catalog;
 import schemacrawler.schema.ForeignKey;
+import schemacrawler.schema.PrimaryKey;
 import schemacrawler.schemacrawler.LoadOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaCrawlerOptions;
 import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
@@ -499,9 +504,13 @@ public class JdbcHelper {
 								.collect(Collectors.toList());
 		}
 	
+	
+	//TODO: Verify the method purpose. broke into píeces...
 	private Optional<MetaClass> processMetaClass(schemacrawler.schema.Table t) {
 		MetaClass meta = new MetaClass();
-		t.getForeignKeys().stream()
+		t
+		.getForeignKeys()
+		.stream()
 		.forEach(f ->{
 			processForeignKey(f , meta);
 		});
@@ -511,6 +520,10 @@ public class JdbcHelper {
 		meta.setClassName(newName);
 		meta.setTableName(t.getFullName());
 		//TODO: decompose id to process identity properly.
+		PrimaryKeyClassifier pkClassifier = getPkClassifier();
+		IdentityResult ir = pkClassifier.classify(t.getPrimaryKey());
+		MetaIdentity mi = ir.processIdentity();
+		PrimaryKey pk = t.getPrimaryKey();
 		MetaIdentity mi = new MetaIdentity(t.getPrimaryKey());
 		meta.setIdentity(mi);
 		//TODO: refactor here is not good.
@@ -549,6 +562,12 @@ public class JdbcHelper {
 		return  Optional.of(meta);	
 	}
 	
+	
+	//TODO: Create Classifier abstraction and datastructure of the classification.
+	private PrimaryKeyClassifier getPkClassifier() {
+		return null;
+	}
+
 	private void checkAttributeIsFk(MetaDataAttribute md, MetaClass meta) {
 		meta.getMetaRelationsClasses()
 		.stream()

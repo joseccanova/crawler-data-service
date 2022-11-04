@@ -21,7 +21,7 @@ spring:
     jdbcUrl: jdbc:postgresql://127.0.0.1:5432/musicbrainz
     url: jdbc:postgresql://127.0.0.1:5432/musicbrainz
     username: postgres 
-    password: 123456   
+    password: 123   
   hikari:
     connectionTimeout: 30000
     maximumPoolSize: 250
