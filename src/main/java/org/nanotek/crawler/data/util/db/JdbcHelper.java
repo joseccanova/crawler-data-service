@@ -69,6 +69,7 @@ import schemacrawler.schemacrawler.SchemaCrawlerOptionsBuilder;
 import schemacrawler.schemacrawler.SchemaInfoLevelBuilder;
 import schemacrawler.tools.utility.SchemaCrawlerUtility;
 
+//TODO: Refactor and decompose all responsabilities.
 @SuppressWarnings({"rawtypes"})
 public class JdbcHelper {
 	
@@ -89,10 +90,10 @@ public class JdbcHelper {
 	List<MetaClassPostProcessor<MetaClass>> processors;
 
 	public JdbcHelper() {
-		postConstruct();
+		prepare();
 	}
 
-	void postConstruct() {
+	void prepare() {
 		processors = new ArrayList<>();
 	}
 
@@ -520,6 +521,7 @@ public class JdbcHelper {
 		meta.setClassName(newName);
 		meta.setTableName(t.getFullName());
 		//TODO: decompose id to process identity properly.
+		//TODO: put the identity after column scan.
 		PrimaryKeyClassifier pkClassifier = getPkClassifier();
 		IdentityResult ir = pkClassifier.classify(t.getPrimaryKey());
 		MetaIdentity mi = ir.processIdentity();

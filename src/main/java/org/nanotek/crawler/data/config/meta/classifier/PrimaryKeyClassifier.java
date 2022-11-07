@@ -6,21 +6,28 @@ import org.nanotek.crawler.data.config.meta.classifier.IdentityResult.IdentityTy
 
 import schemacrawler.schema.PrimaryKey;
 
-public class PrimaryKeyClassifier implements Classifier<PrimaryKey , IdentityResult>{
+public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<IdentityResult>>{
 
 	@Override
-	public IdentityResult classify(PrimaryKey pk) {
-		return Optional
-					.ofNullable(pk)
-					.map(k -> getIdentityType(k));
-					.map(t -> new IdentityResult(t , pk));
+	public Optional<IdentityResult> classify(PrimaryKey pk) {
+		Optional<IdentityResult> ir =  Optional
+					.ofNullable(getIdentityType(pk))
+					.map(t -> new IdentityResult(t));
+		processKeyAttributes(ir); 
+		return ir;
+	}
+
+	private void processKeyAttributes(Optional<IdentityResult> ir) {
+		
 	}
 
 	private IdentityResult.IdentityType getIdentityType(PrimaryKey k) {
-		if (k.getConstrainedColumns().size() == 1 )
+		int size = k.getConstrainedColumns().size();
+		if (size == 1) {
 			return IdentityType.Single;
-		else (k.getConstrainedColumns().size() > 1) 
+		}else if (size > 1) {
 			return IdentityType.Composite;
+		}
 		return null;
 	}
 

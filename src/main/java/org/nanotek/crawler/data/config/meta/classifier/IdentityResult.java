@@ -1,5 +1,7 @@
 package org.nanotek.crawler.data.config.meta.classifier;
 
+import schemacrawler.schema.PrimaryKey;
+
 public class IdentityResult {
 
 	public IdentityResult(IdentityType type) {
@@ -13,6 +15,8 @@ public class IdentityResult {
 
 	private IdentityType type;
 	
+	private PrimaryKey key ; 
+	
 	public IdentityType getType() {
 		return type;
 	}
@@ -24,6 +28,20 @@ public class IdentityResult {
 	public static enum IdentityType{
 		Single,
 		Composite
+	}
+
+	public IdentityResult(IdentityType type, PrimaryKey key) {
+		super();
+		this.type = type;
+		this.key = key;
+	}
+
+	public PrimaryKey getKey() {
+		return key;
+	}
+
+	public void setKey(PrimaryKey key) {
+		this.key = key;
 	}
 	
 }
