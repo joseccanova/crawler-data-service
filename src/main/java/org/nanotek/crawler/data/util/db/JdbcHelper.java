@@ -520,11 +520,12 @@ public class JdbcHelper {
 		String newName = processNameTranslationStrategy(t.getName());
 		meta.setClassName(newName);
 		meta.setTableName(t.getFullName());
-		//TODO: decompose id to process identity properly.
-		//TODO: put the identity after column scan.
 		PrimaryKeyClassifier pkClassifier = getPkClassifier();
-		IdentityResult ir = pkClassifier.classify(t.getPrimaryKey());
-		MetaIdentity mi = ir.processIdentity();
+		
+		//TODO: Create a IdentityResult function to generate the metaidentity. Ir -> Funtion(IR) generates de Identity
+		MetaIdentity mi = pkClassifier.classify(t.getPrimaryKey())
+								.map(ir -> ir.getKey())
+								.map(k -> new MetaIdentity(k)).get();
 		PrimaryKey pk = t.getPrimaryKey();
 		MetaIdentity mi = new MetaIdentity(t.getPrimaryKey());
 		meta.setIdentity(mi);
