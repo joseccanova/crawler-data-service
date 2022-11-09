@@ -16,7 +16,7 @@ public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<Ide
 					.map(this::processKeyAttributes);
 	}
 
-	//TODO: review nullable type to throw a runtime exception on key classification.
+	//TODO: review null type to throw a runtime exception on key classification.
 	private IdentityResult.IdentityType getIdentityType(PrimaryKey k) {
 		int size = k.getConstrainedColumns().size();
 		if (size == 1) {
@@ -24,7 +24,7 @@ public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<Ide
 		}else if (size > 1) {
 			return IdentityType.Composite;
 		}
-		return null;
+		return IdentityType.Null;
 	}
 
 

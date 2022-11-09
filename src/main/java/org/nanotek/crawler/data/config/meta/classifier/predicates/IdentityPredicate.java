@@ -1,4 +1,4 @@
-package org.nanotek.crawler.data.config.meta.classifier;
+package org.nanotek.crawler.data.config.meta.classifier.predicates;
 
 import java.util.function.Predicate;
 

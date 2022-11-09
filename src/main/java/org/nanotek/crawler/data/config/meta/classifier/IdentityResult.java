@@ -27,7 +27,8 @@ public class IdentityResult {
 
 	public static enum IdentityType{
 		Single,
-		Composite
+		Composite,
+		Null
 	}
 
 	public IdentityResult(IdentityType type, PrimaryKey key) {
