@@ -10,10 +10,9 @@ public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<Ide
 
 	@Override
 	public Optional<IdentityResult> classify(PrimaryKey pk) {
-		Optional<IdentityResult> ir =  Optional
+		return Optional
 					.ofNullable(getIdentityType(pk))
-					.map(t -> processKeyAttributes(t));
-		return ir;
+					.map(this::processKeyAttributes);
 	}
 
 	//TODO: implement the abstraction for the identity result .
