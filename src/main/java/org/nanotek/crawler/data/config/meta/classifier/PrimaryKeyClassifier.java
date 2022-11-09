@@ -12,13 +12,13 @@ public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<Ide
 	public Optional<IdentityResult> classify(PrimaryKey pk) {
 		Optional<IdentityResult> ir =  Optional
 					.ofNullable(getIdentityType(pk))
-					.map(t -> new IdentityResult(t));
-		processKeyAttributes(ir); 
+					.map(t -> processKeyAttributes(t));
 		return ir;
 	}
 
-	private void processKeyAttributes(Optional<IdentityResult> ir) {
-		
+	//TODO: implement the abstraction for the identity result .
+	private IdentityResult  processKeyAttributes(IdentityResult.IdentityType it) {
+		return new IdentityResult(it);
 	}
 
 	private IdentityResult.IdentityType getIdentityType(PrimaryKey k) {
