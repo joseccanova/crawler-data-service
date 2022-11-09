@@ -11,15 +11,12 @@ public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<Ide
 	@Override
 	public Optional<IdentityResult> classify(PrimaryKey pk) {
 		return Optional
-					.ofNullable(getIdentityType(pk))
+					.ofNullable(pk)
+					.map(this::getIdentityType)
 					.map(this::processKeyAttributes);
 	}
 
-	//TODO: implement the abstraction for the identity result .
-	private IdentityResult  processKeyAttributes(IdentityResult.IdentityType it) {
-		return new IdentityResult(it);
-	}
-
+	//TODO: review nullable type to throw a runtime exception on key classification.
 	private IdentityResult.IdentityType getIdentityType(PrimaryKey k) {
 		int size = k.getConstrainedColumns().size();
 		if (size == 1) {
@@ -30,4 +27,9 @@ public class PrimaryKeyClassifier implements Classifier<PrimaryKey ,Optional<Ide
 		return null;
 	}
 
+
+	//TODO: implement the abstraction for the identity result .
+	private IdentityResult  processKeyAttributes(IdentityResult.IdentityType it) {
+		return new IdentityResult(it);
+	}
 }
