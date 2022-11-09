@@ -4,9 +4,11 @@ import schemacrawler.schema.PrimaryKey;
 
 public class IdentityResult {
 
+	public static final IdentityResult NULLRESULT = new IdentityResult(IdentityType.Null);
+
 	private IdentityType type;
 	
-	private PrimaryKey key ; 
+	private PrimaryKey key; 
 	
 	private Enum<?> subType;
 	
