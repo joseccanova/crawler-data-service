@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -521,13 +522,9 @@ public class JdbcHelper {
 		meta.setClassName(newName);
 		meta.setTableName(t.getFullName());
 		PrimaryKeyClassifier pkClassifier = getPkClassifier();
-		
 		//TODO: Create a IdentityResult function to generate the metaidentity. Ir -> Funtion(IR) generates de Identity
 		MetaIdentity mi = pkClassifier.classify(t.getPrimaryKey())
-								.map(ir -> ir.getKey())
-								.map(k -> new MetaIdentity(k)).get();
-		PrimaryKey pk = t.getPrimaryKey();
-		MetaIdentity mi = new MetaIdentity(t.getPrimaryKey());
+								.map(MetaIdentityGenerator::apply).get();
 		meta.setIdentity(mi);
 		//TODO: refactor here is not good.
 		t.getColumns().stream()
